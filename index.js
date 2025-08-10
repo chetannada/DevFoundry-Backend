@@ -112,6 +112,13 @@ app.post("/api/logout", (req, res) => {
   });
 });
 
+// Step 5: For testing purposes
+app.get("/", (req, res) => {
+  res.send(
+    `<h1>Welcome to React.js Project Server</h1><p>See Live Web URL for this Server - <a href="https://reactjs-projects-app.netlify.app">https://reactjs-projects-app.netlify.app</a></p>`
+  );
+});
+
 app.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)
 );
