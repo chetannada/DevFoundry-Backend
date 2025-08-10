@@ -1,0 +1,27 @@
+{
+  "name": "reactjs-projects-backend",
+  "version": "1.0.0",
+  "description": "Node.js + Express backend for React.js Projects with GitHub login, session-based authentication, and protected API routes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "dev:local": "cross-env NODE_ENV=development nodemon index.js"
+  },
+  "keywords": [],
+  "author": "Chetan Nada",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv-flow": "^4.1.0",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0"
+  }
+}
