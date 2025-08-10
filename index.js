@@ -14,13 +14,22 @@ const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 const CALLBACK_URL = process.env.GITHUB_CALLBACK_URL;
 const React_APP_URL = process.env.REACT_APP_URL;
+const React_LOCAL_URL = process.env.React_LOCAL_URL;
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === "production";
+
+const allowedOrigins = [React_APP_URL, React_LOCAL_URL];
 
 // allow requests from outside resources like postman, or your frontend if you choose to build that out
 app.use(
   cors({
-    origin: React_APP_URL,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -35,6 +44,7 @@ app.use(express.json());
 // this will allow us to create a session for each user
 app.use(
   session({
+    name: "connect.sid",
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -42,6 +52,7 @@ app.use(
       httpOnly: true,
       secure: isProduction, // true in prod for HTTPS, false in dev
       maxAge: 1000 * 60 * 60 * 24, // 24 hour
+      sameSite: isProduction ? "none" : "lax",
     },
   })
 );
