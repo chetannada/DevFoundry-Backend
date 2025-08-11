@@ -99,7 +99,7 @@ app.get("/auth/github/callback", async (req, res) => {
       userAvatarUrl: userData.avatar_url,
     };
 
-    res.redirect(React_APP_URL);
+    res.redirect(isProduction ? React_APP_URL : React_LOCAL_URL);
   } catch (err) {
     console.error(err);
     res.status(500).send("Authentication failed");
