@@ -130,6 +130,9 @@ app.get("/", (req, res) => {
   );
 });
 
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+// Only start the HTTP server if this file was run directly with `node index.js`
+if (require.main === module) {
+  app.listen(PORT, () =>
+    console.log(`Server running on http://localhost:${PORT}`)
+  );
+}
