@@ -14,20 +14,29 @@ const app = express();
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 const CALLBACK_URL = process.env.GITHUB_CALLBACK_URL;
-const React_APP_URL = process.env.REACT_APP_URL;
-const React_LOCAL_URL = process.env.React_LOCAL_URL;
+const REACT_APP_URL = process.env.REACT_APP_URL;
+const REACT_LOCAL_URL = process.env.REACT_LOCAL_URL;
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === "production";
 
-// allow requests from outside resources like postman, or your frontend if you choose to build that out
-app.use(
-  cors({
-    origin: isProduction ? React_APP_URL : React_LOCAL_URL,
-    credentials: true, // allow cookies to be sent
-  })
-);
+const allowedOrigins = [REACT_APP_URL, REACT_LOCAL_URL];
 
-console.log("CORS origin:", isProduction ? React_APP_URL : React_LOCAL_URL);
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow requests with no origin (e.g. Postman, mobile apps)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+// Enable CORS for the app
+app.use(cors(corsOptions));
+
+// Preflight requests for CORS
+app.options("*", cors(corsOptions));
 
 // allow us to parse cookies from the request, this is needed for session management
 app.use(cookieParser());
@@ -85,7 +94,7 @@ app.get("/auth/github/callback", async (req, res) => {
       maxAge: 1000 * 60 * 60 * 24,
     });
 
-    res.redirect(isProduction ? React_APP_URL : React_LOCAL_URL);
+    res.redirect(isProduction ? REACT_APP_URL : REACT_LOCAL_URL);
   } catch (err) {
     console.error(err);
     res.status(500).send("Authentication failed");
