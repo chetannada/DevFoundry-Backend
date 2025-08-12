@@ -1,10 +1,9 @@
 {
   "name": "reactjs-projects-backend",
   "version": "1.0.0",
-  "description": "Node.js + Express backend for React.js Projects with GitHub login, session-based authentication, and protected API routes",
+  "description": "Node.js + Express backend for React.js Projects with GitHub login and JWT-based authentication",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "dev:local": "cross-env NODE_ENV=development nodemon index.js",
@@ -14,7 +13,7 @@
     "express",
     "nodejs",
     "github-oauth",
-    "session-auth",
+    "jwt-auth",
     "vercel",
     "react-backend"
   ],
@@ -31,8 +30,7 @@
     "cors": "^2.8.5",
     "dotenv-flow": "^4.1.0",
     "express": "^5.1.0",
-    "express-session": "^1.18.2",
-    "serverless-http": "^3.2.0"
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "cross-env": "^10.0.0"

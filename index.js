@@ -3,7 +3,8 @@ const axios = require("axios");
 const dotenvFlow = require("dotenv-flow");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const session = require("express-session");
+const { createToken } = require("./utils/jwt");
+const authenticateUser = require("./middleware/auth");
 
 // dotenv-flow is used to manage environment variables across different environments
 dotenvFlow.config();
@@ -40,23 +41,6 @@ app.use(cookieParser());
 // app will serve and receive data in a JSON format
 app.use(express.json());
 
-// session management
-// this will allow us to create a session for each user
-app.use(
-  session({
-    name: "connect.sid",
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: isProduction, // true in prod for HTTPS, false in dev
-      maxAge: 1000 * 60 * 60 * 24, // 24 hour
-      sameSite: isProduction ? "none" : "lax",
-    },
-  })
-);
-
 // trust first proxy for secure cookies in production
 if (isProduction) {
   app.set("trust proxy", 1);
@@ -91,13 +75,21 @@ app.get("/auth/github/callback", async (req, res) => {
 
     const userData = userRes.data;
 
-    // Save user in session
-    req.session.user = {
+    const userPayload = {
       userId: userData.id,
       userLogin: userData.login,
       userName: userData.name,
       userAvatarUrl: userData.avatar_url,
     };
+
+    const jwtToken = createToken(userPayload);
+
+    res.cookie("auth_token", jwtToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 1000 * 60 * 60 * 24,
+    });
 
     res.redirect(isProduction ? React_APP_URL : React_LOCAL_URL);
   } catch (err) {
@@ -107,23 +99,21 @@ app.get("/auth/github/callback", async (req, res) => {
 });
 
 // Step 3: Check if user is logged in
-app.get("/api/me", (req, res) => {
-  if (req.session.user) {
-    res.json({ user: req.session.user });
-  } else {
-    res.status(401).json({ message: "User Not logged in" });
-  }
+app.get("/api/me", authenticateUser, (req, res) => {
+  res.json({ user: req.user });
 });
 
 // Step 4: For Logout
 app.post("/api/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.clearCookie("connect.sid");
-    res.json({ message: "User Successfully Logged out" });
+  res.clearCookie("auth_token", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   });
+  res.json({ message: "User Successfully Logged out" });
 });
 
-// Step 5: For testing purposes
+// Step 5: Test route
 app.get("/", (req, res) => {
   res.send(
     `<h1>Welcome to React.js Project Server</h1><p>See Live Web URL for this Server - <a href="https://reactjs-projects-app.netlify.app">https://reactjs-projects-app.netlify.app</a></p>`
