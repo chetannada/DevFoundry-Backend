@@ -19,21 +19,15 @@ const React_LOCAL_URL = process.env.React_LOCAL_URL;
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === "production";
 
-const allowedOrigins = [React_APP_URL, React_LOCAL_URL];
-
 // allow requests from outside resources like postman, or your frontend if you choose to build that out
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
+    origin: isProduction ? React_APP_URL : React_LOCAL_URL,
+    credentials: true, // allow cookies to be sent
   })
 );
+
+console.log("CORS origin:", isProduction ? React_APP_URL : React_LOCAL_URL);
 
 // allow us to parse cookies from the request, this is needed for session management
 app.use(cookieParser());
