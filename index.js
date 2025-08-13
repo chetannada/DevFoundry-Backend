@@ -19,23 +19,13 @@ const REACT_LOCAL_URL = process.env.REACT_LOCAL_URL;
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === "production";
 
-// CORS middleware - Always handle credentials + preflight
-const allowedOrigin = isProduction ? REACT_APP_URL : REACT_LOCAL_URL;
+// allow requests from outside resources like postman, or your frontend if you choose to build that out
 app.use(
   cors({
-    origin: allowedOrigin,
-    credentials: true,
+    origin: isProduction ? REACT_APP_URL : REACT_LOCAL_URL,
+    credentials: true, // allow cookies to be sent
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// Handle preflight explicitly
-app.options(
-  "*",
-  cors({
-    origin: allowedOrigin,
-    credentials: true,
   })
 );
 
