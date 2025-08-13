@@ -19,24 +19,25 @@ const REACT_LOCAL_URL = process.env.REACT_LOCAL_URL;
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === "production";
 
-const allowedOrigins = [REACT_APP_URL, REACT_LOCAL_URL];
+// CORS middleware - Always handle credentials + preflight
+const allowedOrigin = isProduction ? REACT_APP_URL : REACT_LOCAL_URL;
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    // allow requests with no origin (e.g. Postman, mobile apps)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-
-// Enable CORS for the app
-app.use(cors(corsOptions));
-
-// Preflight requests for CORS
-app.options("*", cors(corsOptions));
+// Handle preflight explicitly
+app.options(
+  "*",
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+  })
+);
 
 // allow us to parse cookies from the request, this is needed for session management
 app.use(cookieParser());
