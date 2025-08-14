@@ -3,8 +3,9 @@ const axios = require("axios");
 const dotenvFlow = require("dotenv-flow");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { createToken } = require("./utils/jwt");
+const { generateToken } = require("./utils/jwt");
 const authenticateUser = require("./middleware/auth");
+const { sendError } = require("./utils/error");
 
 // dotenv-flow is used to manage environment variables across different environments
 dotenvFlow.config();
@@ -19,11 +20,12 @@ const REACT_LOCAL_URL = process.env.REACT_LOCAL_URL;
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === "production";
 
-// allow requests from outside resources like postman, or your frontend if you choose to build that out
+// CORS is configured to allow requests from the frontend url
+// and to allow credentials (cookies) to be sent with requests
 app.use(
   cors({
     origin: isProduction ? REACT_APP_URL : REACT_LOCAL_URL,
-    credentials: true, // allow cookies to be sent
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -76,7 +78,7 @@ app.get("/auth/github/callback", async (req, res) => {
       userAvatarUrl: userData.avatar_url,
     };
 
-    const jwtToken = createToken(userPayload);
+    const jwtToken = generateToken(userPayload);
 
     res.cookie("auth_token", jwtToken, {
       httpOnly: true,
@@ -88,7 +90,8 @@ app.get("/auth/github/callback", async (req, res) => {
     res.redirect(isProduction ? REACT_APP_URL : REACT_LOCAL_URL);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Authentication failed");
+    // If there's an error during the authentication process, send a consistent error response
+    sendError(res, 500, "Authentication failed. Please try again.");
   }
 });
 
