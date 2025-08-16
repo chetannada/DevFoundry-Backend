@@ -2,6 +2,7 @@ const express = require("express");
 const dotenvFlow = require("dotenv-flow");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
 
 // dotenv-flow is used to manage environment variables across different environments
 dotenvFlow.config();
@@ -35,9 +36,19 @@ if (isProduction) {
   app.set("trust proxy", 1);
 }
 
-// Handle routes for authentication
-const authRoutes = require("./routes/authRoutes");
-app.use(authRoutes);
+// Connect to MongoDB Atlas using the connection string from environment variables
+const MONGODB_ATLAS_CONNECTION = process.env.MONGODB_ATLAS_CONNECTION;
+
+mongoose
+  .connect(MONGODB_ATLAS_CONNECTION)
+  .then(() => console.log("✅ DB Connected Successfully"))
+  .catch((error) => console.log(error));
+
+// Handle routes for authentication and projects
+const { authRoutes, projectRoutes } = require("./routes");
+app.use("/", authRoutes);
+
+app.use("/api/projects", projectRoutes);
 
 // Only start the HTTP server if this file was run directly with `node index.js`
 if (require.main === module) {

@@ -29,7 +29,8 @@
     "cors": "^2.8.5",
     "dotenv-flow": "^4.1.0",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.1"
   },
   "devDependencies": {
     "cross-env": "^10.0.0"
