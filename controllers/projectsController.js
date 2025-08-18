@@ -2,13 +2,24 @@ const Project = require("../models/projectsModel");
 
 // GET all projects
 exports.getAllCraftedProjects = async (req, res) => {
-  const { projectTitle } = req.query;
+  const { projectTitle, contributorId } = req.query;
 
   try {
-    let query = {};
+    let query = {
+      $or: [
+        { status: "approved" },
+        {
+          status: { $in: ["pending", "rejected"] },
+          contributorId: contributorId ? Number(contributorId) : null,
+        },
+      ],
+    };
 
     if (projectTitle) {
-      query.projectTitle = { $regex: projectTitle, $options: "i" };
+      query.$and = [
+        ...(query.$and || []),
+        { projectTitle: { $regex: projectTitle, $options: "i" } },
+      ];
     }
 
     const projects = await Project.find(query).sort({ updatedAt: -1 });
@@ -31,6 +42,7 @@ exports.addCraftedProject = async (req, res) => {
       contributorAvatarUrl,
       contributorGithubUrl,
       contributorRole,
+      contributorId,
     } = req.body;
 
     if (
@@ -41,7 +53,8 @@ exports.addCraftedProject = async (req, res) => {
       !contributorName ||
       !contributorAvatarUrl ||
       !contributorGithubUrl ||
-      !contributorRole
+      !contributorRole ||
+      !contributorId
     ) {
       return res.status(400).json({ error: "Missing required fields" });
     }
@@ -52,6 +65,7 @@ exports.addCraftedProject = async (req, res) => {
       githubCodeUrl,
       liveUrl,
       contributorName,
+      contributorId,
       contributorAvatarUrl,
       contributorGithubUrl,
       contributorRole: contributorRole,

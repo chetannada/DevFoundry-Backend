@@ -7,6 +7,7 @@ const projectSchema = new mongoose.Schema(
     githubCodeUrl: { type: String, required: true },
     liveUrl: { type: String, required: true },
     contributorName: { type: String, required: true },
+    contributorId: { type: Number, required: true },
     contributorAvatarUrl: { type: String, required: true },
     contributorGithubUrl: { type: String, required: true },
     contributorRole: {

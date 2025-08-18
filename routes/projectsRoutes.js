@@ -5,7 +5,7 @@ const {
   addCraftedProject,
 } = require("../controllers/projectsController");
 
-router.get("/crafted", getAllCraftedProjects);
+router.get("/crafted/get", getAllCraftedProjects);
 
 router.post("/crafted/add", addCraftedProject);
 
