@@ -2,13 +2,13 @@ const Project = require("../models/projectsModel");
 
 // GET all projects
 exports.getAllCraftedProjects = async (req, res) => {
-  const { title } = req.query;
+  const { projectTitle } = req.query;
 
   try {
     let query = {};
 
-    if (title) {
-      query.title = { $regex: title, $options: "i" };
+    if (projectTitle) {
+      query.projectTitle = { $regex: projectTitle, $options: "i" };
     }
 
     const projects = await Project.find(query).sort({ updatedAt: -1 });
