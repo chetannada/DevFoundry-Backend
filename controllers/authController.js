@@ -53,7 +53,7 @@ exports.githubCallback = async (req, res) => {
       // First-time login: create user with default role
       user = new AuthUser({
         userId: userData.id,
-        userLogin: userData.login,
+        githubUserName: userData.login,
         userName: userData.name,
         userAvatarUrl: userData.avatar_url,
         userGithubUrl: userData.html_url,
@@ -64,7 +64,7 @@ exports.githubCallback = async (req, res) => {
     // Prepare payload for JWT
     const userPayload = {
       userId: user.userId,
-      userLogin: user.userLogin,
+      githubUserName: user.githubUserName,
       userName: user.userName,
       userAvatarUrl: user.userAvatarUrl,
       userGithubUrl: user.userGithubUrl,
