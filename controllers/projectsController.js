@@ -84,9 +84,37 @@ exports.addCraftedProject = async (req, res) => {
     });
 
     const savedProject = await newProject.save();
-    res.status(201).json(savedProject);
+    res
+      .status(201)
+      .json({ message: "Project submitted successfully", savedProject });
   } catch (err) {
     console.error("Error submitting project:", err);
     res.status(500).json({ error: "Failed to submit project" });
+  }
+};
+
+// Delete a project by ID
+exports.deleteCraftedProject = async (req, res) => {
+  const { id } = req.params;
+  const { contributorId } = req.body;
+
+  const getProject = await Project.findById(id);
+  if (!getProject || getProject.contributorId !== Number(contributorId)) {
+    return res
+      .status(403)
+      .json({ error: "Unauthorized to delete this project" });
+  }
+
+  try {
+    const deletedProject = await Project.findByIdAndDelete(id);
+
+    if (!deletedProject) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    res.json({ message: "Project deleted successfully", deletedProject });
+  } catch (err) {
+    console.error("Error deleting project:", err);
+    res.status(500).json({ error: "Failed to delete project" });
   }
 };
