@@ -15,7 +15,16 @@ const projectSchema = new mongoose.Schema(
       enum: ["admin", "contributor"],
       default: "contributor",
     },
-    isApproved: { type: Boolean, default: false },
+    techStack: {
+      type: [String],
+      validate: {
+        validator: function (arr) {
+          const unique = new Set(arr.map((item) => item.trim().toLowerCase()));
+          return unique.size === arr.length && arr.length <= 4;
+        },
+        message: "Tech stack must be unique and not exceed 4 items.",
+      },
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

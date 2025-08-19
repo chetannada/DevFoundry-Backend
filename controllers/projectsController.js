@@ -43,6 +43,7 @@ exports.addCraftedProject = async (req, res) => {
       contributorGithubUrl,
       contributorRole,
       contributorId,
+      techStack,
     } = req.body;
 
     if (
@@ -59,6 +60,10 @@ exports.addCraftedProject = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    const stack = Array.isArray(techStack)
+      ? [...new Set(techStack.map((item) => item.trim()))].slice(0, 4)
+      : [];
+
     const newProject = new Project({
       projectTitle,
       projectDescription,
@@ -70,6 +75,7 @@ exports.addCraftedProject = async (req, res) => {
       contributorGithubUrl,
       contributorRole: contributorRole,
       isApproved: false,
+      techStack: stack,
       status: "pending",
       reviewedBy: null,
       reviewedAt: null,
