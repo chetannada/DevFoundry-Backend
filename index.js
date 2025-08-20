@@ -13,6 +13,7 @@ const REACT_APP_URL = process.env.REACT_APP_URL;
 const REACT_LOCAL_URL = process.env.REACT_LOCAL_URL;
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === "production";
+const currentEnv = process.env.NODE_ENV;
 
 // CORS is configured to allow requests from the frontend url
 // and to allow credentials (cookies) to be sent with requests
@@ -41,7 +42,7 @@ const MONGODB_ATLAS_CONNECTION = process.env.MONGODB_ATLAS_CONNECTION;
 
 mongoose
   .connect(MONGODB_ATLAS_CONNECTION)
-  .then(() => console.log("✅ DB Connected Successfully"))
+  .then(() => console.log(`✅ Connected to ${currentEnv} database`))
   .catch((error) => console.log(error));
 
 // Handle routes for authentication and projects

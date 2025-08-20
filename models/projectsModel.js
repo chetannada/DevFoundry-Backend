@@ -45,6 +45,16 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Project = mongoose.model("CraftedProjects", projectSchema);
+const isProduction = process.env.NODE_ENV === "production";
+
+const collectionName = isProduction
+  ? "craftedprojects_prod"
+  : "craftedprojects_dev";
+
+const Project = mongoose.model(
+  "CraftedProjects",
+  projectSchema,
+  collectionName
+);
 
 module.exports = Project;
