@@ -30,6 +30,12 @@ const projectSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    updatedBy: { type: String, default: null },
+    updatedByRole: {
+      type: String,
+      enum: ["admin", "contributor"],
+      default: null,
+    },
     reviewedBy: { type: String, default: null },
     reviewedAt: { type: Date, default: null },
     submittedAt: { type: Date, default: null },

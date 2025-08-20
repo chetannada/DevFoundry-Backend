@@ -1,6 +1,6 @@
 const Project = require("../models/projectsModel");
 
-// GET all projects
+// Get all projects
 exports.getAllCraftedProjects = async (req, res) => {
   const { projectTitle, contributorId } = req.query;
 
@@ -74,9 +74,10 @@ exports.addCraftedProject = async (req, res) => {
       contributorAvatarUrl,
       contributorGithubUrl,
       contributorRole: contributorRole,
-      isApproved: false,
       techStack: stack,
       status: "pending",
+      updatedBy: null,
+      updatedByRole: null,
       reviewedBy: null,
       reviewedAt: null,
       submittedAt: new Date(),
@@ -116,5 +117,70 @@ exports.deleteCraftedProject = async (req, res) => {
   } catch (err) {
     console.error("Error deleting project:", err);
     res.status(500).json({ error: "Failed to delete project" });
+  }
+};
+
+// Update a project by ID
+exports.updateCraftedProject = async (req, res) => {
+  const { id } = req.params;
+  const {
+    projectTitle,
+    projectDescription,
+    githubCodeUrl,
+    liveUrl,
+    contributorName,
+    contributorAvatarUrl,
+    contributorGithubUrl,
+    contributorRole,
+    contributorId,
+    techStack,
+    updatedBy,
+    updatedByRole,
+  } = req.body;
+
+  try {
+    const existingProject = await Project.findById(id);
+
+    if (!existingProject) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    if (existingProject.contributorId !== Number(contributorId)) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to update this project" });
+    }
+
+    const stack = Array.isArray(techStack)
+      ? [...new Set(techStack.map((item) => item.trim()))].slice(0, 4)
+      : [];
+
+    existingProject.projectTitle = projectTitle ?? existingProject.projectTitle;
+    existingProject.projectDescription =
+      projectDescription ?? existingProject.projectDescription;
+    existingProject.githubCodeUrl =
+      githubCodeUrl ?? existingProject.githubCodeUrl;
+    existingProject.liveUrl = liveUrl ?? existingProject.liveUrl;
+    existingProject.contributorName =
+      contributorName ?? existingProject.contributorName;
+    existingProject.contributorAvatarUrl =
+      contributorAvatarUrl ?? existingProject.contributorAvatarUrl;
+    existingProject.contributorGithubUrl =
+      contributorGithubUrl ?? existingProject.contributorGithubUrl;
+    existingProject.contributorRole =
+      contributorRole ?? existingProject.contributorRole;
+    existingProject.techStack = stack.length
+      ? stack
+      : existingProject.techStack;
+    existingProject.updatedBy = updatedBy || "Unknown";
+    existingProject.updatedByRole = updatedByRole || "contributor";
+    existingProject.updatedAt = new Date();
+
+    const updatedProject = await existingProject.save();
+
+    res.json({ message: "Project updated successfully", updatedProject });
+  } catch (err) {
+    console.error("Error updating project:", err);
+    res.status(500).json({ error: "Failed to update project" });
   }
 };
