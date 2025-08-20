@@ -6,6 +6,7 @@ exports.getAllCraftedProjects = async (req, res) => {
 
   try {
     let query = {
+      isDeleted: false,
       $or: [
         { status: "approved" },
         {
@@ -82,6 +83,7 @@ exports.addCraftedProject = async (req, res) => {
       reviewedAt: null,
       submittedAt: new Date(),
       rejectionReason: null,
+      isDeleted: false,
     });
 
     const savedProject = await newProject.save();
@@ -97,23 +99,32 @@ exports.addCraftedProject = async (req, res) => {
 // Delete a project by ID
 exports.deleteCraftedProject = async (req, res) => {
   const { id } = req.params;
-  const { contributorId } = req.body;
-
-  const getProject = await Project.findById(id);
-  if (!getProject || getProject.contributorId !== Number(contributorId)) {
-    return res
-      .status(403)
-      .json({ error: "Unauthorized to delete this project" });
-  }
+  const { contributorId, userRole } = req.body;
 
   try {
-    const deletedProject = await Project.findByIdAndDelete(id);
+    const project = await Project.findById(id);
 
-    if (!deletedProject) {
+    if (!project) {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    res.json({ message: "Project deleted successfully", deletedProject });
+    const isContributor = project.contributorId === Number(contributorId);
+    const isAdmin = userRole === "admin";
+
+    if (!isContributor && !isAdmin) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to delete this project" });
+    }
+
+    if (isAdmin) {
+      await Project.findByIdAndDelete(id);
+      return res.json({ message: "Project permanently deleted by admin" });
+    } else {
+      project.isDeleted = true;
+      await project.save();
+      return res.json({ message: "Project deleted successfully" });
+    }
   } catch (err) {
     console.error("Error deleting project:", err);
     res.status(500).json({ error: "Failed to delete project" });

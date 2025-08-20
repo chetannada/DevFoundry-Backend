@@ -40,6 +40,7 @@ const projectSchema = new mongoose.Schema(
     reviewedAt: { type: Date, default: null },
     submittedAt: { type: Date, default: null },
     rejectionReason: { type: String, default: null },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
