@@ -24,10 +24,10 @@ exports.getAllCraftedProjects = async (req, res) => {
     }
 
     const projects = await Project.find(query).sort({ updatedAt: -1 });
-    res.json(projects);
+    res.status(200).json(projects);
   } catch (err) {
     console.error("Error fetching projects:", err);
-    res.status(500).json({ error: "Failed to fetch projects" });
+    res.status(500).json({ errorMessage: "Failed to fetch projects" });
   }
 };
 
@@ -58,7 +58,7 @@ exports.addCraftedProject = async (req, res) => {
       !contributorRole ||
       !contributorId
     ) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({ errorMessage: "Missing required fields" });
     }
 
     const stack = Array.isArray(techStack)
@@ -92,7 +92,7 @@ exports.addCraftedProject = async (req, res) => {
       .json({ message: "Project submitted successfully", savedProject });
   } catch (err) {
     console.error("Error submitting project:", err);
-    res.status(500).json({ error: "Failed to submit project" });
+    res.status(500).json({ errorMessage: "Failed to submit project" });
   }
 };
 
@@ -105,7 +105,7 @@ exports.deleteCraftedProject = async (req, res) => {
     const project = await Project.findById(id);
 
     if (!project) {
-      return res.status(404).json({ error: "Project not found" });
+      return res.status(404).json({ errorMessage: "Project not found" });
     }
 
     const isContributor = project.contributorId === Number(contributorId);
@@ -114,20 +114,22 @@ exports.deleteCraftedProject = async (req, res) => {
     if (!isContributor && !isAdmin) {
       return res
         .status(403)
-        .json({ error: "Unauthorized to delete this project" });
+        .json({ errorMessage: "Unauthorized to delete this project" });
     }
 
     if (isAdmin) {
       await Project.findByIdAndDelete(id);
-      return res.json({ message: "Project permanently deleted by admin" });
+      return res
+        .status(200)
+        .json({ message: "Project permanently deleted by admin" });
     } else {
       project.isDeleted = true;
       await project.save();
-      return res.json({ message: "Project deleted successfully" });
+      return res.status(200).json({ message: "Project deleted successfully" });
     }
   } catch (err) {
     console.error("Error deleting project:", err);
-    res.status(500).json({ error: "Failed to delete project" });
+    res.status(500).json({ errorMessage: "Failed to delete project" });
   }
 };
 
@@ -153,13 +155,13 @@ exports.updateCraftedProject = async (req, res) => {
     const existingProject = await Project.findById(id);
 
     if (!existingProject) {
-      return res.status(404).json({ error: "Project not found" });
+      return res.status(404).json({ errorMessage: "Project not found" });
     }
 
     if (existingProject.contributorId !== Number(contributorId)) {
       return res
         .status(403)
-        .json({ error: "Unauthorized to update this project" });
+        .json({ errorMessage: "Unauthorized to update this project" });
     }
 
     const stack = Array.isArray(techStack)
@@ -192,6 +194,6 @@ exports.updateCraftedProject = async (req, res) => {
     res.json({ message: "Project updated successfully", updatedProject });
   } catch (err) {
     console.error("Error updating project:", err);
-    res.status(500).json({ error: "Failed to update project" });
+    res.status(500).json({ errorMessage: "Failed to update project" });
   }
 };
