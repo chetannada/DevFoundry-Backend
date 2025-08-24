@@ -8,7 +8,12 @@
     "dev": "nodemon index.js",
     "dev:local": "cross-env NODE_ENV=development nodemon index.js",
     "script": "cross-env NODE_ENV=development node scripts/seedDB.js",
-    "script:prod": "cross-env NODE_ENV=production node scripts/seedDB.js"
+    "script:prod": "cross-env NODE_ENV=production node scripts/seedDB.js",
+    "prettify": "npx lint-staged",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,json,md}": "prettier --write"
   },
   "keywords": [
     "express",
@@ -35,6 +40,9 @@
     "mongoose": "^8.17.1"
   },
   "devDependencies": {
-    "cross-env": "^10.0.0"
+    "cross-env": "^10.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2"
   }
 }
