@@ -1,14 +1,14 @@
-const axios = require("axios");
-const { generateToken } = require("../utils/jwt");
-const { sendError } = require("../utils/error");
-const AuthUser = require("../models/authUserModel");
+const axios = require('axios');
+const { generateToken } = require('../utils/jwt');
+const { sendError } = require('../utils/error');
+const UserModel = require('../database/models/user');
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 const CALLBACK_URL = process.env.GITHUB_CALLBACK_URL;
 const REACT_APP_URL = process.env.REACT_APP_URL;
 const REACT_LOCAL_URL = process.env.REACT_LOCAL_URL;
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Base route to welcome users
 exports.baseRoot = (req, res) => {
@@ -29,62 +29,62 @@ exports.githubCallback = async (req, res) => {
 
   try {
     const tokenRes = await axios.post(
-      "https://github.com/login/oauth/access_token",
+      'https://github.com/login/oauth/access_token',
       {
         client_id: CLIENT_ID,
         client_secret: CLIENT_SECRET,
         code,
       },
-      { headers: { Accept: "application/json" } }
+      { headers: { Accept: 'application/json' } }
     );
 
     const accessToken = tokenRes.data.access_token;
 
-    const userRes = await axios.get("https://api.github.com/user", {
+    const userRes = await axios.get('https://api.github.com/user', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
     const userData = userRes.data;
 
     // Check if user already exists in MongoDB
-    let user = await AuthUser.findOne({ userId: userData.id });
+    let user = await UserModel.findOne({ 'github.id': userData.id });
 
     if (!user) {
       // First-time login: create user with default role
-      user = new AuthUser({
-        userId: userData.id,
-        githubUserName: userData.login,
+      user = new UserModel({
+        github: {
+          id: userData.id,
+          originalName: userData.name,
+          remoteName: userData.login,
+          avatarUrl: userData.avatar_url,
+          url: userData.html_url,
+        },
         userName: userData.name,
-        userAvatarUrl: userData.avatar_url,
-        userGithubUrl: userData.html_url,
       });
       await user.save();
     }
 
     // Prepare payload for JWT
     const userPayload = {
-      userId: user.userId,
-      githubUserName: user.githubUserName,
-      userName: user.userName,
-      userAvatarUrl: user.userAvatarUrl,
-      userGithubUrl: user.userGithubUrl,
+      userId: user._id,
+      githubUserId: user.github.id,
       userRole: user.userRole,
       memberSince: user.memberSince,
     };
 
     const jwtToken = generateToken(userPayload);
 
-    res.cookie("auth_token", jwtToken, {
+    res.cookie('auth_token', jwtToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: 1000 * 60 * 60 * 24,
     });
 
     res.redirect(isProduction ? REACT_APP_URL : REACT_LOCAL_URL);
   } catch (err) {
     console.error(err);
-    sendError(res, 500, "Authentication failed. Please try again.");
+    sendError(res, 500, 'Authentication failed. Please try again.');
   }
 };
 
@@ -95,10 +95,10 @@ exports.getMe = (req, res) => {
 
 // Logout the user by clearing the authentication cookie
 exports.logout = (req, res) => {
-  res.clearCookie("auth_token", {
+  res.clearCookie('auth_token', {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: isProduction ? 'none' : 'lax',
   });
-  res.json({ message: "User Successfully Logged out" });
+  res.json({ message: 'User Successfully Logged out' });
 };
