@@ -96,21 +96,14 @@ exports.addProject = async (req, res) => {
       contributorId,
       contributorAvatarUrl,
       contributorGithubUrl,
-      contributorRole: contributorRole,
+      contributorRole,
       techStack: stack,
-      status: "pending",
-      updatedBy: null,
-      updatedByRole: null,
-      reviewedBy: null,
-      reviewedAt: null,
       submittedAt: new Date(),
-      rejectionReason: null,
-      isDeleted: false,
     });
 
-    const savedProject = await newProject.save();
+    const addedProject = await newProject.save();
 
-    res.status(201).json({ message: "Project submitted successfully", savedProject });
+    res.status(201).json({ message: "Project submitted successfully", addedProject });
   } catch (err) {
     console.error("Error submitting project:", err);
     res.status(500).json({ errorMessage: "Failed to submit project" });
@@ -120,7 +113,7 @@ exports.addProject = async (req, res) => {
 // Delete a project by ID
 exports.deleteProject = async (req, res) => {
   const { id } = req.params;
-  const { contributorId, userRole } = req.body;
+  const { contributorName, contributorId, userRole } = req.body;
   const { type } = req.query;
 
   if (!validateType(type)) {
@@ -147,6 +140,10 @@ exports.deleteProject = async (req, res) => {
       return res.status(200).json({ message: "Project permanently deleted by admin" });
     } else {
       project.isDeleted = true;
+      project.deletedAt = new Date();
+      project.deletedBy = contributorName;
+      project.deletedByRole = userRole;
+
       await project.save();
       return res.status(200).json({ message: "Project deleted successfully" });
     }

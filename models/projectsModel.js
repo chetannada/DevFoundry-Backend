@@ -41,6 +41,13 @@ const projectSchema = new mongoose.Schema(
     submittedAt: { type: Date, default: null },
     rejectionReason: { type: String, default: null },
     isDeleted: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: null },
+    deletedBy: { type: String, default: null },
+    deletedByRole: {
+      type: String,
+      enum: ["admin", "contributor"],
+      default: null,
+    },
   },
   { timestamps: true }
 );
