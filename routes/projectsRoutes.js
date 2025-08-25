@@ -5,7 +5,9 @@ const {
   addProject,
   deleteProject,
   updateProject,
+  reviewProject,
 } = require("../controllers/projectsController");
+const authenticateUser = require("../middleware/auth");
 
 router.get("/get", getAllProjects);
 
@@ -14,5 +16,7 @@ router.post("/add", addProject);
 router.delete("/delete/:id", deleteProject);
 
 router.put("/update/:id", updateProject);
+
+router.put("/review/:id", authenticateUser, reviewProject);
 
 module.exports = router;
