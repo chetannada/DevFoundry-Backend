@@ -19,7 +19,7 @@ const projectSchema = new mongoose.Schema(
       type: [String],
       validate: {
         validator: function (arr) {
-          const unique = new Set(arr.map((item) => item.trim().toLowerCase()));
+          const unique = new Set(arr.map(item => item.trim().toLowerCase()));
           return unique.size === arr.length && arr.length <= 4;
         },
         message: "Tech stack must be unique and not exceed 4 items.",
@@ -47,14 +47,10 @@ const projectSchema = new mongoose.Schema(
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const collectionName = isProduction
-  ? "craftedprojects_prod"
-  : "craftedprojects_dev";
+const craftedCollection = isProduction ? "craftedprojects_prod" : "craftedprojects_dev";
+const curatedCollection = isProduction ? "curatedprojects_prod" : "curatedprojects_dev";
 
-const Project = mongoose.model(
-  "CraftedProjects",
-  projectSchema,
-  collectionName
-);
+const CraftedProject = mongoose.model("CraftedProject", projectSchema, craftedCollection);
+const CuratedProject = mongoose.model("CuratedProject", projectSchema, curatedCollection);
 
-module.exports = Project;
+module.exports = { CraftedProject, CuratedProject };
