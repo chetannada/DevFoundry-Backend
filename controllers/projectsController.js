@@ -1,8 +1,20 @@
-const Project = require("../models/projectsModel");
+const { CuratedProject, CraftedProject } = require("../models/projectsModel");
+
+function getModelByType(type) {
+  return type === "crafted" ? CraftedProject : CuratedProject;
+}
+
+function validateType(type) {
+  return ["crafted", "curated"].includes(type);
+}
 
 // Get all projects
-exports.getAllCraftedProjects = async (req, res) => {
-  const { projectTitle, contributorId } = req.query;
+exports.getAllProjects = async (req, res) => {
+  const { projectTitle, contributorId, type } = req.query;
+
+  if (!validateType(type)) {
+    return res.status(400).json({ errorMessage: "Invalid project type" });
+  }
 
   try {
     let query = {
@@ -23,8 +35,10 @@ exports.getAllCraftedProjects = async (req, res) => {
       ];
     }
 
-    const projects = await Project.find(query).sort({ updatedAt: -1 });
-    res.status(200).json(projects);
+    const ProjectModel = getModelByType(type);
+    const allprojects = await ProjectModel.find(query).sort({ updatedAt: -1 });
+
+    res.status(200).json(allprojects);
   } catch (err) {
     console.error("Error fetching projects:", err);
     res.status(500).json({ errorMessage: "Failed to fetch projects" });
@@ -32,7 +46,13 @@ exports.getAllCraftedProjects = async (req, res) => {
 };
 
 // Add a new project
-exports.addCraftedProject = async (req, res) => {
+exports.addProject = async (req, res) => {
+  const { type } = req.query;
+
+  if (!validateType(type)) {
+    return res.status(400).json({ errorMessage: "Invalid project type" });
+  }
+
   try {
     const {
       projectTitle,
@@ -62,10 +82,12 @@ exports.addCraftedProject = async (req, res) => {
     }
 
     const stack = Array.isArray(techStack)
-      ? [...new Set(techStack.map((item) => item.trim()))].slice(0, 4)
+      ? [...new Set(techStack.map(item => item.trim()))].slice(0, 4)
       : [];
 
-    const newProject = new Project({
+    const ProjectModel = getModelByType(type);
+
+    const newProject = new ProjectModel({
       projectTitle,
       projectDescription,
       githubCodeUrl,
@@ -74,22 +96,14 @@ exports.addCraftedProject = async (req, res) => {
       contributorId,
       contributorAvatarUrl,
       contributorGithubUrl,
-      contributorRole: contributorRole,
+      contributorRole,
       techStack: stack,
-      status: "pending",
-      updatedBy: null,
-      updatedByRole: null,
-      reviewedBy: null,
-      reviewedAt: null,
       submittedAt: new Date(),
-      rejectionReason: null,
-      isDeleted: false,
     });
 
-    const savedProject = await newProject.save();
-    res
-      .status(201)
-      .json({ message: "Project submitted successfully", savedProject });
+    const addedProject = await newProject.save();
+
+    res.status(201).json({ message: "Project submitted successfully", addedProject });
   } catch (err) {
     console.error("Error submitting project:", err);
     res.status(500).json({ errorMessage: "Failed to submit project" });
@@ -97,12 +111,18 @@ exports.addCraftedProject = async (req, res) => {
 };
 
 // Delete a project by ID
-exports.deleteCraftedProject = async (req, res) => {
+exports.deleteProject = async (req, res) => {
   const { id } = req.params;
-  const { contributorId, userRole } = req.body;
+  const { contributorName, contributorId, userRole } = req.body;
+  const { type } = req.query;
+
+  if (!validateType(type)) {
+    return res.status(400).json({ errorMessage: "Invalid project type" });
+  }
 
   try {
-    const project = await Project.findById(id);
+    const ProjectModel = getModelByType(type);
+    const project = await ProjectModel.findById(id);
 
     if (!project) {
       return res.status(404).json({ errorMessage: "Project not found" });
@@ -112,18 +132,18 @@ exports.deleteCraftedProject = async (req, res) => {
     const isAdmin = userRole === "admin";
 
     if (!isContributor && !isAdmin) {
-      return res
-        .status(403)
-        .json({ errorMessage: "Unauthorized to delete this project" });
+      return res.status(403).json({ errorMessage: "Unauthorized to delete this project" });
     }
 
     if (isAdmin) {
-      await Project.findByIdAndDelete(id);
-      return res
-        .status(200)
-        .json({ message: "Project permanently deleted by admin" });
+      await ProjectModel.findByIdAndDelete(id);
+      return res.status(200).json({ message: "Project permanently deleted by admin" });
     } else {
       project.isDeleted = true;
+      project.deletedAt = new Date();
+      project.deletedBy = contributorName;
+      project.deletedByRole = userRole;
+
       await project.save();
       return res.status(200).json({ message: "Project deleted successfully" });
     }
@@ -134,8 +154,9 @@ exports.deleteCraftedProject = async (req, res) => {
 };
 
 // Update a project by ID
-exports.updateCraftedProject = async (req, res) => {
+exports.updateProject = async (req, res) => {
   const { id } = req.params;
+
   const {
     projectTitle,
     projectDescription,
@@ -151,49 +172,100 @@ exports.updateCraftedProject = async (req, res) => {
     updatedByRole,
   } = req.body;
 
+  const { type } = req.query;
+
+  if (!validateType(type)) {
+    return res.status(400).json({ errorMessage: "Invalid project type" });
+  }
+
   try {
-    const existingProject = await Project.findById(id);
+    const ProjectModel = getModelByType(type);
+    const existingProject = await ProjectModel.findById(id);
 
     if (!existingProject) {
       return res.status(404).json({ errorMessage: "Project not found" });
     }
 
     if (existingProject.contributorId !== Number(contributorId)) {
-      return res
-        .status(403)
-        .json({ errorMessage: "Unauthorized to update this project" });
+      return res.status(403).json({ errorMessage: "Unauthorized to update this project" });
     }
 
     const stack = Array.isArray(techStack)
-      ? [...new Set(techStack.map((item) => item.trim()))].slice(0, 4)
+      ? [...new Set(techStack.map(item => item.trim()))].slice(0, 4)
       : [];
 
     existingProject.projectTitle = projectTitle ?? existingProject.projectTitle;
-    existingProject.projectDescription =
-      projectDescription ?? existingProject.projectDescription;
-    existingProject.githubCodeUrl =
-      githubCodeUrl ?? existingProject.githubCodeUrl;
+    existingProject.projectDescription = projectDescription ?? existingProject.projectDescription;
+    existingProject.githubCodeUrl = githubCodeUrl ?? existingProject.githubCodeUrl;
     existingProject.liveUrl = liveUrl ?? existingProject.liveUrl;
-    existingProject.contributorName =
-      contributorName ?? existingProject.contributorName;
+    existingProject.contributorName = contributorName ?? existingProject.contributorName;
     existingProject.contributorAvatarUrl =
       contributorAvatarUrl ?? existingProject.contributorAvatarUrl;
     existingProject.contributorGithubUrl =
       contributorGithubUrl ?? existingProject.contributorGithubUrl;
-    existingProject.contributorRole =
-      contributorRole ?? existingProject.contributorRole;
-    existingProject.techStack = stack.length
-      ? stack
-      : existingProject.techStack;
+    existingProject.contributorRole = contributorRole ?? existingProject.contributorRole;
+    existingProject.techStack = stack.length ? stack : existingProject.techStack;
     existingProject.updatedBy = updatedBy || "Unknown";
     existingProject.updatedByRole = updatedByRole || "contributor";
     existingProject.updatedAt = new Date();
+    existingProject.status = "pending";
 
-    const updatedProject = await existingProject.save();
+    const projectAfterUpdate = await existingProject.save();
 
-    res.json({ message: "Project updated successfully", updatedProject });
+    res.status(200).json({ message: "Project updated successfully", projectAfterUpdate });
   } catch (err) {
     console.error("Error updating project:", err);
     res.status(500).json({ errorMessage: "Failed to update project" });
+  }
+};
+
+// Review a project by ID
+exports.reviewProject = async (req, res) => {
+  const { id } = req.params;
+  const { status, rejectionReason } = req.body;
+  const { type } = req.query;
+  const { userName, userRole } = req.user;
+
+  if (!validateType(type)) {
+    return res.status(400).json({ errorMessage: "Invalid project type" });
+  }
+
+  if (!["approved", "rejected"].includes(status)) {
+    return res.status(400).json({ errorMessage: "Invalid status value" });
+  }
+
+  if (status === "rejected" && !rejectionReason) {
+    return res
+      .status(400)
+      .json({ errorMessage: "Rejection reason is required when status is rejected" });
+  }
+
+  if (!userName || !userRole) {
+    return res.status(401).json({ errorMessage: "Unauthorized: missing user context" });
+  }
+
+  if (userRole !== "admin") {
+    return res.status(403).json({ errorMessage: "Only admins can review projects" });
+  }
+
+  try {
+    const ProjectModel = getModelByType(type);
+    const project = await ProjectModel.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ errorMessage: "Project not found" });
+    }
+
+    project.status = status;
+    project.reviewedBy = userName;
+    project.reviewedByRole = userRole;
+    project.reviewedAt = new Date();
+    project.rejectionReason = status === "rejected" ? rejectionReason : null;
+
+    const projectAfterReview = await project.save();
+    res.status(200).json({ message: "Project reviewed successfully", projectAfterReview });
+  } catch (err) {
+    console.error("Error reviewing project:", err);
+    res.status(500).json({ errorMessage: "Failed to review project" });
   }
 };
