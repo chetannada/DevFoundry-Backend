@@ -208,12 +208,64 @@ exports.updateProject = async (req, res) => {
     existingProject.updatedBy = updatedBy || "Unknown";
     existingProject.updatedByRole = updatedByRole || "contributor";
     existingProject.updatedAt = new Date();
+    existingProject.status = "pending";
 
-    const updatedProject = await existingProject.save();
+    const projectAfterUpdate = await existingProject.save();
 
-    res.json({ message: "Project updated successfully", updatedProject });
+    res.status(200).json({ message: "Project updated successfully", projectAfterUpdate });
   } catch (err) {
     console.error("Error updating project:", err);
     res.status(500).json({ errorMessage: "Failed to update project" });
+  }
+};
+
+// Review a project by ID
+exports.reviewProject = async (req, res) => {
+  const { id } = req.params;
+  const { status, rejectionReason } = req.body;
+  const { type } = req.query;
+  const { userName, userRole } = req.user;
+
+  if (!validateType(type)) {
+    return res.status(400).json({ errorMessage: "Invalid project type" });
+  }
+
+  if (!["approved", "rejected"].includes(status)) {
+    return res.status(400).json({ errorMessage: "Invalid status value" });
+  }
+
+  if (status === "rejected" && !rejectionReason) {
+    return res
+      .status(400)
+      .json({ errorMessage: "Rejection reason is required when status is rejected" });
+  }
+
+  if (!userName || !userRole) {
+    return res.status(401).json({ errorMessage: "Unauthorized: missing user context" });
+  }
+
+  if (userRole !== "admin") {
+    return res.status(403).json({ errorMessage: "Only admins can review projects" });
+  }
+
+  try {
+    const ProjectModel = getModelByType(type);
+    const project = await ProjectModel.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ errorMessage: "Project not found" });
+    }
+
+    project.status = status;
+    project.reviewedBy = userName;
+    project.reviewedByRole = userRole;
+    project.reviewedAt = new Date();
+    project.rejectionReason = status === "rejected" ? rejectionReason : null;
+
+    const projectAfterReview = await project.save();
+    res.status(200).json({ message: "Project reviewed successfully", projectAfterReview });
+  } catch (err) {
+    console.error("Error reviewing project:", err);
+    res.status(500).json({ errorMessage: "Failed to review project" });
   }
 };

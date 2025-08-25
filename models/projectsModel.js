@@ -37,17 +37,22 @@ const projectSchema = new mongoose.Schema(
       default: null,
     },
     reviewedBy: { type: String, default: null },
+    reviewedByRole: {
+      type: String,
+      enum: ["admin", "contributor"],
+      default: null,
+    },
     reviewedAt: { type: Date, default: null },
     submittedAt: { type: Date, default: null },
     rejectionReason: { type: String, default: null },
     isDeleted: { type: Boolean, default: false },
-    deletedAt: { type: Date, default: null },
     deletedBy: { type: String, default: null },
     deletedByRole: {
       type: String,
       enum: ["admin", "contributor"],
       default: null,
     },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
