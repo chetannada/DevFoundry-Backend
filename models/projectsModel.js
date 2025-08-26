@@ -17,12 +17,13 @@ const projectSchema = new mongoose.Schema(
     },
     techStack: {
       type: [String],
+      set: arr => arr.map(item => item.trim().toLowerCase()),
       validate: {
         validator: function (arr) {
-          const unique = new Set(arr.map((item) => item.trim().toLowerCase()));
-          return unique.size === arr.length && arr.length <= 4;
+          const unique = new Set(arr);
+          return unique.size === arr.length && arr.length <= 8;
         },
-        message: "Tech stack must be unique and not exceed 4 items.",
+        message: "Tech stack must be unique and not exceed 8 items.",
       },
     },
     status: {
@@ -37,24 +38,27 @@ const projectSchema = new mongoose.Schema(
       default: null,
     },
     reviewedBy: { type: String, default: null },
+    reviewedByRole: {
+      type: String,
+      enum: ["admin", "contributor"],
+      default: null,
+    },
     reviewedAt: { type: Date, default: null },
     submittedAt: { type: Date, default: null },
     rejectionReason: { type: String, default: null },
     isDeleted: { type: Boolean, default: false },
+    deletedBy: { type: String, default: null },
+    deletedByRole: {
+      type: String,
+      enum: ["admin", "contributor"],
+      default: null,
+    },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
 
-const isProduction = process.env.NODE_ENV === "production";
+const CraftedProject = mongoose.model("CraftedProject", projectSchema);
+const CuratedProject = mongoose.model("CuratedProject", projectSchema);
 
-const collectionName = isProduction
-  ? "craftedprojects_prod"
-  : "craftedprojects_dev";
-
-const Project = mongoose.model(
-  "CraftedProjects",
-  projectSchema,
-  collectionName
-);
-
-module.exports = Project;
+module.exports = { CraftedProject, CuratedProject };
