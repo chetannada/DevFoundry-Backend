@@ -104,9 +104,7 @@ exports.addProject = async (req, res) => {
       return res.status(400).json({ errorMessage: "Missing required fields" });
     }
 
-    const stack = Array.isArray(techStack)
-      ? [...new Set(techStack.map(item => item.trim()))].slice(0, 4)
-      : [];
+    const stack = Array.isArray(techStack) ? [...new Set(techStack.map(item => item.trim()))] : [];
 
     const ProjectModel = getModelByType(type);
 
