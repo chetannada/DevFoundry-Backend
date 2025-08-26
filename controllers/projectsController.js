@@ -10,7 +10,7 @@ function validateType(type) {
 
 // Get all projects
 exports.getAllProjects = async (req, res) => {
-  const { projectTitle, contributorId, type } = req.query;
+  const { projectTitle, status, techStack, contributorName, contributorId, type } = req.query;
 
   if (!validateType(type)) {
     return res.status(400).json({ errorMessage: "Invalid project type" });
@@ -28,11 +28,34 @@ exports.getAllProjects = async (req, res) => {
       ],
     };
 
+    const andFilters = [];
+
     if (projectTitle) {
-      query.$and = [
-        ...(query.$and || []),
-        { projectTitle: { $regex: projectTitle, $options: "i" } },
-      ];
+      andFilters.push({
+        projectTitle: { $regex: projectTitle, $options: "i" },
+      });
+    }
+
+    if (status) {
+      andFilters.push({
+        status: { $regex: status, $options: "i" },
+      });
+    }
+
+    if (techStack) {
+      andFilters.push({
+        techStack: { $regex: techStack, $options: "i" },
+      });
+    }
+
+    if (contributorName) {
+      andFilters.push({
+        contributorName: { $regex: contributorName, $options: "i" },
+      });
+    }
+
+    if (andFilters.length) {
+      query.$and = andFilters;
     }
 
     const ProjectModel = getModelByType(type);
