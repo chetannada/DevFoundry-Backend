@@ -1,4 +1,4 @@
-const Project = require("../models/projectsModel");
+const Project = require("../database/models/projectsModel");
 
 // Get all projects
 exports.getAllCraftedProjects = async (req, res) => {
@@ -87,9 +87,7 @@ exports.addCraftedProject = async (req, res) => {
     });
 
     const savedProject = await newProject.save();
-    res
-      .status(201)
-      .json({ message: "Project submitted successfully", savedProject });
+    res.status(201).json({ message: "Project submitted successfully", savedProject });
   } catch (err) {
     console.error("Error submitting project:", err);
     res.status(500).json({ errorMessage: "Failed to submit project" });
@@ -112,16 +110,12 @@ exports.deleteCraftedProject = async (req, res) => {
     const isAdmin = userRole === "admin";
 
     if (!isContributor && !isAdmin) {
-      return res
-        .status(403)
-        .json({ errorMessage: "Unauthorized to delete this project" });
+      return res.status(403).json({ errorMessage: "Unauthorized to delete this project" });
     }
 
     if (isAdmin) {
       await Project.findByIdAndDelete(id);
-      return res
-        .status(200)
-        .json({ message: "Project permanently deleted by admin" });
+      return res.status(200).json({ message: "Project permanently deleted by admin" });
     } else {
       project.isDeleted = true;
       await project.save();
@@ -159,9 +153,7 @@ exports.updateCraftedProject = async (req, res) => {
     }
 
     if (existingProject.contributorId !== Number(contributorId)) {
-      return res
-        .status(403)
-        .json({ errorMessage: "Unauthorized to update this project" });
+      return res.status(403).json({ errorMessage: "Unauthorized to update this project" });
     }
 
     const stack = Array.isArray(techStack)
@@ -169,22 +161,16 @@ exports.updateCraftedProject = async (req, res) => {
       : [];
 
     existingProject.projectTitle = projectTitle ?? existingProject.projectTitle;
-    existingProject.projectDescription =
-      projectDescription ?? existingProject.projectDescription;
-    existingProject.githubCodeUrl =
-      githubCodeUrl ?? existingProject.githubCodeUrl;
+    existingProject.projectDescription = projectDescription ?? existingProject.projectDescription;
+    existingProject.githubCodeUrl = githubCodeUrl ?? existingProject.githubCodeUrl;
     existingProject.liveUrl = liveUrl ?? existingProject.liveUrl;
-    existingProject.contributorName =
-      contributorName ?? existingProject.contributorName;
+    existingProject.contributorName = contributorName ?? existingProject.contributorName;
     existingProject.contributorAvatarUrl =
       contributorAvatarUrl ?? existingProject.contributorAvatarUrl;
     existingProject.contributorGithubUrl =
       contributorGithubUrl ?? existingProject.contributorGithubUrl;
-    existingProject.contributorRole =
-      contributorRole ?? existingProject.contributorRole;
-    existingProject.techStack = stack.length
-      ? stack
-      : existingProject.techStack;
+    existingProject.contributorRole = contributorRole ?? existingProject.contributorRole;
+    existingProject.techStack = stack.length ? stack : existingProject.techStack;
     existingProject.updatedBy = updatedBy || "Unknown";
     existingProject.updatedByRole = updatedByRole || "contributor";
     existingProject.updatedAt = new Date();

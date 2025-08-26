@@ -1,24 +1,16 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-const {
-  baseRoot,
-  githubRedirect,
-  githubCallback,
-  getMe,
-  logout,
-} = require('../controllers/authController')
+const { githubRedirect, githubCallback, getMe, logout } = require("../controllers/authController");
 
-const authenticateUser = require('../middleware/auth')
+const authenticateUser = require("../middleware/auth");
 
-router.get('/', baseRoot)
+router.get("/github", githubRedirect);
 
-router.get('/github', githubRedirect)
+router.get("/github/callback", githubCallback);
 
-router.get('/github/callback', githubCallback)
+router.get("/me", authenticateUser, getMe);
 
-router.get('/me', authenticateUser, getMe)
+router.post("/logout", logout);
 
-router.post('/logout', logout)
-
-module.exports = router
+module.exports = router;
