@@ -57,12 +57,7 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const isProduction = process.env.NODE_ENV === "production";
-
-const craftedCollection = isProduction ? "craftedprojects_prod" : "craftedprojects_dev";
-const curatedCollection = isProduction ? "curatedprojects_prod" : "curatedprojects_dev";
-
-const CraftedProject = mongoose.model("CraftedProject", projectSchema, craftedCollection);
-const CuratedProject = mongoose.model("CuratedProject", projectSchema, curatedCollection);
+const CraftedProject = mongoose.model("CraftedProject", projectSchema);
+const CuratedProject = mongoose.model("CuratedProject", projectSchema);
 
 module.exports = { CraftedProject, CuratedProject };
