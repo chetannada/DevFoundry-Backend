@@ -190,9 +190,7 @@ exports.updateProject = async (req, res) => {
       return res.status(403).json({ errorMessage: "Unauthorized to update this project" });
     }
 
-    const stack = Array.isArray(techStack)
-      ? [...new Set(techStack.map(item => item.trim()))].slice(0, 4)
-      : [];
+    const stack = Array.isArray(techStack) ? [...new Set(techStack.map(item => item.trim()))] : [];
 
     existingProject.projectTitle = projectTitle ?? existingProject.projectTitle;
     existingProject.projectDescription = projectDescription ?? existingProject.projectDescription;
@@ -215,6 +213,12 @@ exports.updateProject = async (req, res) => {
     res.status(200).json({ message: "Project updated successfully", projectAfterUpdate });
   } catch (err) {
     console.error("Error updating project:", err);
+
+    if (err.name === "ValidationError") {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ errorMessage: messages.join(", ") });
+    }
+
     res.status(500).json({ errorMessage: "Failed to update project" });
   }
 };

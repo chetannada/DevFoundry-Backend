@@ -20,9 +20,9 @@ const projectSchema = new mongoose.Schema(
       validate: {
         validator: function (arr) {
           const unique = new Set(arr.map(item => item.trim().toLowerCase()));
-          return unique.size === arr.length && arr.length <= 4;
+          return unique.size === arr.length && arr.length <= 8;
         },
-        message: "Tech stack must be unique and not exceed 4 items.",
+        message: "Tech stack must be unique and not exceed 8 items.",
       },
     },
     status: {
