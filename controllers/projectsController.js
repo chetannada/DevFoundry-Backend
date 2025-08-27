@@ -10,7 +10,7 @@ function validateType(type) {
 
 // Get all projects
 exports.getAllProjects = async (req, res) => {
-  const { projectTitle, status, techStack, contributorName, contributorId, type } = req.query;
+  const { projectTitle, techStack, contributorName, contributorId, type } = req.query;
 
   if (!validateType(type)) {
     return res.status(400).json({ errorMessage: "Invalid project type" });
@@ -33,12 +33,6 @@ exports.getAllProjects = async (req, res) => {
     if (projectTitle) {
       andFilters.push({
         projectTitle: { $regex: projectTitle, $options: "i" },
-      });
-    }
-
-    if (status) {
-      andFilters.push({
-        status: { $regex: status, $options: "i" },
       });
     }
 
