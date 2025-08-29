@@ -20,9 +20,7 @@ exports.getAllProjects = async (req, res) => {
     const isAdmin = req?.user?.userRole === "admin";
     const isContributor = req?.user?.userRole === "contributor";
 
-    let query = {
-      isDeleted: false,
-    };
+    let query = {};
 
     if (isAdmin) {
       // Admin sees all projects
@@ -31,6 +29,7 @@ exports.getAllProjects = async (req, res) => {
       };
     } else if (isContributor) {
       // Contributors see only approved + their own pending/rejected
+      query.isDeleted = false;
       query.$or = [
         { status: "approved" },
         ...(contributorId
@@ -44,6 +43,7 @@ exports.getAllProjects = async (req, res) => {
       ];
     } else {
       // Guest user — only show approved projects
+      query.isDeleted = false;
       query.status = "approved";
     }
 
@@ -272,7 +272,7 @@ exports.reviewProject = async (req, res) => {
     return res.status(400).json({ errorMessage: "Invalid status value" });
   }
 
-  if (status === "rejected" && !rejectionReason) {
+  if (status === "rejected" && !rejectionReason?.trim()) {
     return res
       .status(400)
       .json({ errorMessage: "Rejection reason is required when status is rejected" });
@@ -298,12 +298,62 @@ exports.reviewProject = async (req, res) => {
     project.reviewedBy = userName;
     project.reviewedByRole = userRole;
     project.reviewedAt = new Date();
-    project.rejectionReason = status === "rejected" ? rejectionReason : null;
+    project.rejectionReason = status === "rejected" ? rejectionReason.trim() : null;
 
     const projectAfterReview = await project.save();
     res.status(200).json({ message: "Project reviewed successfully", projectAfterReview });
   } catch (err) {
     console.error("Error reviewing project:", err);
     res.status(500).json({ errorMessage: "Failed to review project" });
+  }
+};
+
+// Restore a project by ID
+exports.restoreProject = async (req, res) => {
+  const { id } = req.params;
+  const { status, restoredReason } = req.body;
+  const { type } = req.query;
+  const { userName, userRole } = req.user;
+
+  if (!validateType(type)) {
+    return res.status(400).json({ errorMessage: "Invalid project type" });
+  }
+
+  if (status !== "approved") {
+    return res.status(400).json({ errorMessage: "Only 'approved' status is allowed for restore" });
+  }
+
+  if (!restoredReason?.trim()) {
+    return res.status(400).json({ errorMessage: "Restored reason is required" });
+  }
+
+  if (!userName || !userRole) {
+    return res.status(401).json({ errorMessage: "Unauthorized: missing user context" });
+  }
+
+  if (userRole !== "admin") {
+    return res.status(403).json({ errorMessage: "Only admins can restore projects" });
+  }
+
+  try {
+    const ProjectModel = getModelByType(type);
+    const project = await ProjectModel.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ errorMessage: "Project not found" });
+    }
+
+    project.status = status;
+    project.restoredBy = userName;
+    project.restoredByRole = userRole;
+    project.restoredAt = new Date();
+    project.restoredReason = restoredReason.trim();
+    project.isDeleted = false;
+
+    const projectAfterRestored = await project.save();
+    res.status(200).json({ message: "Project restored successfully", projectAfterRestored });
+  } catch (err) {
+    console.error("Error restoring project:", err);
+    res.status(500).json({ errorMessage: "Failed to restore project" });
   }
 };
