@@ -17,16 +17,35 @@ exports.getAllProjects = async (req, res) => {
   }
 
   try {
+    const isAdmin = req?.user?.userRole === "admin";
+    const isContributor = req?.user?.userRole === "contributor";
+
     let query = {
       isDeleted: false,
-      $or: [
-        { status: "approved" },
-        {
-          status: { $in: ["pending", "rejected"] },
-          contributorId: contributorId ? Number(contributorId) : null,
-        },
-      ],
     };
+
+    if (isAdmin) {
+      // Admin sees all projects
+      query.status = {
+        $in: ["approved", "pending", "rejected"],
+      };
+    } else if (isContributor) {
+      // Contributors see only approved + their own pending/rejected
+      query.$or = [
+        { status: "approved" },
+        ...(contributorId
+          ? [
+              {
+                status: { $in: ["pending", "rejected"] },
+                contributorId: Number(contributorId),
+              },
+            ]
+          : []),
+      ];
+    } else {
+      // Guest user — only show approved projects
+      query.status = "approved";
+    }
 
     const andFilters = [];
 

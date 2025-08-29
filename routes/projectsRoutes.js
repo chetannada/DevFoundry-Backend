@@ -8,8 +8,9 @@ const {
   reviewProject,
 } = require("../controllers/projectsController");
 const authenticateUser = require("../middleware/auth");
+const optionallyAuthenticateUser = require("../middleware/optionallyAuth");
 
-router.get("/get", getAllProjects);
+router.get("/get", optionallyAuthenticateUser, getAllProjects);
 
 router.post("/add", addProject);
 
