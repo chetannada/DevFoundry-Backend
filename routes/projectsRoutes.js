@@ -6,6 +6,7 @@ const {
   deleteProject,
   updateProject,
   reviewProject,
+  restoreProject,
 } = require("../controllers/projectsController");
 const authenticateUser = require("../middleware/auth");
 const optionallyAuthenticateUser = require("../middleware/optionallyAuth");
@@ -19,5 +20,7 @@ router.delete("/delete/:id", deleteProject);
 router.put("/update/:id", updateProject);
 
 router.put("/review/:id", authenticateUser, reviewProject);
+
+router.put("/restore/:id", authenticateUser, restoreProject);
 
 module.exports = router;
