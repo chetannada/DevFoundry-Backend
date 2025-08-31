@@ -204,6 +204,8 @@ exports.updateProject = async (req, res) => {
     techStack,
     updatedBy,
     updatedByRole,
+    rejectionReason,
+    restoredReason,
   } = req.body;
 
   const { type } = req.query;
@@ -240,6 +242,8 @@ exports.updateProject = async (req, res) => {
     existingProject.updatedBy = updatedBy || "Unknown";
     existingProject.updatedByRole = updatedByRole || "contributor";
     existingProject.updatedAt = new Date();
+    existingProject.rejectionReason = rejectionReason ?? existingProject.rejectionReason;
+    existingProject.restoredReason = restoredReason ?? existingProject.restoredReason;
     existingProject.status = "pending";
 
     const projectAfterUpdate = await existingProject.save();
@@ -311,7 +315,7 @@ exports.reviewProject = async (req, res) => {
 // Restore a project by ID
 exports.restoreProject = async (req, res) => {
   const { id } = req.params;
-  const { status, restoredReason } = req.body;
+  const { status, rejectionReason, restoredReason } = req.body;
   const { type } = req.query;
   const { userName, userRole } = req.user;
 
@@ -348,6 +352,7 @@ exports.restoreProject = async (req, res) => {
     project.restoredByRole = userRole;
     project.restoredAt = new Date();
     project.restoredReason = restoredReason.trim();
+    project.rejectionReason = rejectionReason;
     project.isDeleted = false;
 
     const projectAfterRestored = await project.save();
