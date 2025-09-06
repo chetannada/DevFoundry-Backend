@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { sendError } = require("../utils/error");
+const UserModel = require("../database/models/user");
 
-const authenticateUser = (req, res, next) => {
+const authenticateUser = async (req, res, next) => {
   const token = req.cookies.auth_token;
 
   if (!token) {
@@ -10,7 +11,14 @@ const authenticateUser = (req, res, next) => {
   }
 
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await UserModel.findById(decoded.userId);
+
+    if (!user) {
+      return sendError(res, 401, "Invalid token");
+    }
+
     req.user = user;
     next();
   } catch (err) {

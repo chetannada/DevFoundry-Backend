@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { generateToken } = require("../utils/jwt");
 const { sendError } = require("../utils/error");
-const AuthUser = require("../models/authUserModel");
+const UserModel = require("../database/models/user");
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
@@ -47,31 +47,29 @@ exports.githubCallback = async (req, res) => {
     const userData = userRes.data;
 
     // Check if user already exists in MongoDB
-    let user = await AuthUser.findOne({ userId: userData.id });
+    let user = await UserModel.findOne({ "github.id": userData.id });
 
     if (!user) {
       // First-time login: create user with default role
-      user = new AuthUser({
-        userId: userData.id,
-        userGithubLogin: userData.login,
+      user = new UserModel({
+        github: {
+          id: userData.id,
+          originalName: userData.name,
+          remoteName: userData.login,
+          avatarUrl: userData.avatar_url,
+          url: userData.html_url,
+        },
         userName: userData.name,
-        userAvatarUrl: userData.avatar_url,
-        userGithubUrl: userData.html_url,
       });
       await user.save();
     }
 
     // Prepare payload for JWT
     const userPayload = {
-      userId: user.userId,
-      userGithubLogin: user.userGithubLogin,
-      userName: user.userName,
-      userAvatarUrl: user.userAvatarUrl,
-      userGithubUrl: user.userGithubUrl,
+      userId: user._id,
+      githubUserId: user.github.id,
       userRole: user.userRole,
       memberSince: user.memberSince,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
     };
 
     const jwtToken = generateToken(userPayload);

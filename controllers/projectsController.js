@@ -1,4 +1,4 @@
-const { CuratedProject, CraftedProject } = require("../models/projectsModel");
+const { CuratedProject, CraftedProject } = require("../database/models/projectsModel");
 
 function getModelByType(type) {
   return type === "crafted" ? CraftedProject : CuratedProject;
