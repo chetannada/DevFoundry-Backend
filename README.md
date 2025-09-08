@@ -1,9 +1,11 @@
-# 🚀 ReactJs-Projects-Backend
+# 🚀 DevFoundry-Backend
 
-A robust Node.js + Express backend powering the [ReactJs Projects frontend](https://reactjs-projects-app.netlify.app/). This API handles project data, user authentication via GitHub, and supports scalable deployment with environment separation.
+A scalable Node.js + Express.js backend powering the [DevFoundry frontend](https://devfoundry.netlify.app) — _where developers forge their projects_.  
+This API handles curated project data, GitHub OAuth login, JWT-based authentication, role-based access control, and contributor-friendly submission workflows.  
+Built for modular clarity and production-grade deployment across environments.
 
-🔗 **Live API**: [reactjs-projects-api.vercel.app](https://reactjs-projects-api.vercel.app/)  
-📦 **Frontend Repo**: [ReactJs Projects App](https://github.com/chetannada/ReactJs-Projects)
+🔗 **Live API**: [devfoundry-backend.vercel.app](https://devfoundry.vercel.app)  
+📦 **Frontend Repo**: [DevFoundry App](https://github.com/chetannada/DevFoundry)
 
 ## 🛠️ Tech Stack
 
@@ -48,7 +50,7 @@ A robust Node.js + Express backend powering the [ReactJs Projects frontend](http
 ## 🌱 Structure of this Project
 
 ```bash
-/ReactJs-Projects-Backend
+/DevFoundry-Backend
 
 ├── api/                           # Entry point for API routing
 │ └── index.js
@@ -78,13 +80,13 @@ A robust Node.js + Express backend powering the [ReactJs Projects frontend](http
 You need to write the following commands on the terminal screen (in vscode) so that you can run this project locally.
 
 ```bash
-git clone "https://github.com/chetannada/ReactJs-Projects-Backend.git"
+git clone "https://github.com/chetannada/DevFoundry-Backend.git"
 ```
 
 Go to the project directory
 
 ```bash
-cd ReactJs-Projects-Backend
+cd DevFoundry-Backend
 ```
 
 Install dependencies

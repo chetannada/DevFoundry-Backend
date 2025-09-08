@@ -13,7 +13,9 @@ const isProduction = process.env.NODE_ENV === "production";
 // Base route to welcome users
 exports.baseRoot = (req, res) => {
   res.send(
-    `<h1>Welcome to React.js Project Server</h1><p>See Live Web URL for this Server - <a href="https://reactjs-projects-app.netlify.app">https://reactjs-projects-app.netlify.app</a></p>`
+    `<h1>Welcome to DevFoundry Backend</h1>
+     <p>This server powers the DevFoundry platform — <em>where developers forge their projects</em>.</p>
+     <p>See the live frontend at: <a href="https://devfoundry.netlify.app" target="_blank">https://devfoundry.netlify.app</a></p>`
   );
 };
 
