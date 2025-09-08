@@ -1,7 +1,7 @@
 {
-  "name": "reactjs-projects-backend",
-  "version": "1.0.0",
-  "description": "Node.js + Express backend for React.js Projects with GitHub login and JWT-based authentication",
+  "name": "devfoundry-backend",
+  "version": "2.0.0",
+  "description": "Scalable Node.js + Express.js backend for DevFoundry — featuring GitHub OAuth, JWT authentication, role-based access, project submission workflows, and curated project APIs.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -16,16 +16,19 @@
     "*.{js,json,md}": "prettier --write"
   },
   "keywords": [
+    "devfoundry",
     "express",
     "nodejs",
     "github-oauth",
     "jwt-auth",
-    "vercel",
-    "react-backend"
+    "rest-api",
+    "full-stack",
+    "project-submission",
+    "developer-platform"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/chetannada/ReactJs-Projects-Backend"
+    "url": "https://github.com/chetannada/DevFoundry-Backend"
   },
   "author": "Chetan Nada",
   "license": "ISC",
