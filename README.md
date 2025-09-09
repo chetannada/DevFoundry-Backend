@@ -31,21 +31,25 @@ Built for modular clarity and production-grade deployment across environments.
 
 ## 📦 API Endpoints
 
-### 🔧 Crafted Projects
+### 🔧 Core/Community Builds
 
-| Method | Endpoint                           | Description                                  |
-| ------ | ---------------------------------- | -------------------------------------------- |
-| GET    | `/api/projects/crafted/get`        | Fetch all crafted projects                   |
-| POST   | `/api/projects/crafted/add`        | Add a new crafted project (auth required)    |
-| PUT    | `/api/projects/crafted/update/:id` | Update crafted project by ID (auth required) |
-| DELETE | `/api/projects/crafted/delete/:id` | Delete crafted project by ID (auth required) |
+| Method | Endpoint                    | Description                                                     |
+| ------ | --------------------------- | --------------------------------------------------------------- |
+| GET    | `/api/projects/get`         | Fetch all core/community builds                                 |
+| POST   | `/api/projects/add`         | Add a new core/community builds (auth required)                 |
+| PUT    | `/api/projects/update/:id`  | Update core/community builds by ID (auth required)              |
+| DELETE | `/api/projects/delete/:id`  | Delete core/community builds by ID (auth required)              |
+| PUT    | `/api/projects/review/:id`  | Review and update status of a core/community build (admin only) |
+| PUT    | `/api/projects/restore/:id` | Restore a previously deleted core/community build (admin only)  |
 
 ### 🔐 Authentication
 
-| Method | Endpoint         | Description           |
-| ------ | ---------------- | --------------------- |
-| GET    | `/auth/github`   | Initiate GitHub login |
-| GET    | `/auth/callback` | GitHub OAuth callback |
+| Method | Endpoint             | Description                                      |
+| ------ | -------------------- | ------------------------------------------------ |
+| GET    | `/api/auth/github`   | Initiate GitHub login                            |
+| GET    | `/api/auth/callback` | GitHub OAuth callback                            |
+| GET    | `/api/auth/me`       | Fetch authenticated user profile (auth required) |
+| POST   | `/api/auth/logout`   | Log out the current user                         |
 
 ## 🌱 Structure of this Project
 
