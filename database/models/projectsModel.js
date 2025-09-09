@@ -66,7 +66,7 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const CraftedProject = mongoose.model("CraftedProject", projectSchema);
-const CuratedProject = mongoose.model("CuratedProject", projectSchema);
+const CoreBuilds = mongoose.model("CoreBuilds", projectSchema);
+const CommunityBuilds = mongoose.model("CommunityBuilds", projectSchema);
 
-module.exports = { CraftedProject, CuratedProject };
+module.exports = { CoreBuilds, CommunityBuilds };

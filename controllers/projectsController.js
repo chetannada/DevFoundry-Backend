@@ -1,11 +1,11 @@
-const { CuratedProject, CraftedProject } = require("../database/models/projectsModel");
+const { CoreBuilds, CommunityBuilds } = require("../database/models/projectsModel");
 
 function getModelByType(type) {
-  return type === "crafted" ? CraftedProject : CuratedProject;
+  return type === "core" ? CoreBuilds : CommunityBuilds;
 }
 
 function validateType(type) {
-  return ["crafted", "curated"].includes(type);
+  return ["core", "community"].includes(type);
 }
 
 // Get all projects
