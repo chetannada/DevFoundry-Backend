@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { generateToken } = require("../utils/jwt");
 const { sendError } = require("../utils/error");
-const UserModel = require("../database/models/user");
+const UserModel = require("../database/models/userModel");
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
