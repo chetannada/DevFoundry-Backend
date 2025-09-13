@@ -1,6 +1,6 @@
 # 🚀 DevFoundry-Backend
 
-A scalable Node.js + Express.js backend powering the [DevFoundry frontend](https://devfoundry.netlify.app) — _where developers forge their projects_.  
+A scalable Node.js + Express.js backend powering the [DevFoundry frontend](https://devfoundry.netlify.app) — _where developers forge their builds_.  
 This API handles curated project data, GitHub OAuth login, JWT-based authentication, role-based access control, and contributor-friendly submission workflows.  
 Built for modular clarity and production-grade deployment across environments.
 
@@ -33,14 +33,14 @@ Built for modular clarity and production-grade deployment across environments.
 
 ### 🔧 Core/Community Builds
 
-| Method | Endpoint                    | Description                                                     |
-| ------ | --------------------------- | --------------------------------------------------------------- |
-| GET    | `/api/projects/get`         | Fetch all core/community builds                                 |
-| POST   | `/api/projects/add`         | Add a new core/community builds (auth required)                 |
-| PUT    | `/api/projects/update/:id`  | Update core/community builds by ID (auth required)              |
-| DELETE | `/api/projects/delete/:id`  | Delete core/community builds by ID (auth required)              |
-| PUT    | `/api/projects/review/:id`  | Review and update status of a core/community build (admin only) |
-| PUT    | `/api/projects/restore/:id` | Restore a previously deleted core/community build (admin only)  |
+| Method | Endpoint                  | Description                                                     |
+| ------ | ------------------------- | --------------------------------------------------------------- |
+| GET    | `/api/builds/get`         | Fetch all core/community builds                                 |
+| POST   | `/api/builds/add`         | Add a new core/community builds (auth required)                 |
+| PUT    | `/api/builds/update/:id`  | Update core/community builds by ID (auth required)              |
+| DELETE | `/api/builds/delete/:id`  | Delete core/community builds by ID (auth required)              |
+| PUT    | `/api/builds/review/:id`  | Review and update status of a core/community build (admin only) |
+| PUT    | `/api/builds/restore/:id` | Restore a previously deleted core/community build (admin only)  |
 
 ### 🔐 Authentication
 
@@ -58,24 +58,24 @@ Built for modular clarity and production-grade deployment across environments.
 
 ├── api/                           # Entry point for API routing
 │ └── index.js
-├── controllers/                   # Business logic for auth and project routes
+├── controllers/                   # Business logic for auth and build routes
 │ ├── authController.js
-│ └── projectsController.js
+│ └── buildsController.js
 ├── middleware/                    # Auth middleware for route protection
 │ └── auth.js
 ├── models/                        # Mongoose schemas for MongoDB
 │ ├── authUserModel.js
-│ └── projectsModel.js
+│ └── buildsModel.js
 ├── routes/                        # Route definitions and grouping
 │ ├── authRoutes.js
 │ ├── index.js
-│ └── projectsRoutes.js
+│ └── buildsRoutes.js
 ├── utils/                         # Shared utilities (JWT, error handling)
 │ ├── error.js
 │ └── jwt.js
 ├── .env                           # Environment variables (fill actual values)
 ├── index.js                       # App entry point
-└── README.md                  # Project documentation
+└── README.md                      # Project documentation
 
 ```
 

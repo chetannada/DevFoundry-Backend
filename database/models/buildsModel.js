@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
-const projectSchema = new mongoose.Schema(
+const buildSchema = new mongoose.Schema(
   {
-    projectTitle: { type: String, required: true },
-    projectDescription: { type: String, required: true },
-    githubCodeUrl: { type: String, required: true },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    codeUrl: { type: String, required: true },
     liveUrl: { type: String, required: true },
     contributorName: { type: String, required: true },
     contributorId: { type: Number, required: true },
@@ -66,7 +66,7 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const CoreBuilds = mongoose.model("CoreBuilds", projectSchema);
-const CommunityBuilds = mongoose.model("CommunityBuilds", projectSchema);
+const CoreBuilds = mongoose.model("CoreBuilds", buildSchema);
+const CommunityBuilds = mongoose.model("CommunityBuilds", buildSchema);
 
 module.exports = { CoreBuilds, CommunityBuilds };

@@ -14,7 +14,7 @@ const isProduction = process.env.NODE_ENV === "production";
 exports.baseRoot = (req, res) => {
   res.send(
     `<h1>Welcome to DevFoundry Backend</h1>
-     <p>This server powers the DevFoundry platform — <em>where developers forge their projects</em>.</p>
+     <p>This server powers the DevFoundry platform — <em>where developers forge their builds</em>.</p>
      <p>See the live frontend at: <a href="https://devfoundry.netlify.app" target="_blank">https://devfoundry.netlify.app</a></p>`
   );
 };
