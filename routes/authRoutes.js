@@ -1,13 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  baseRoot,
-  githubRedirect,
-  githubCallback,
-  getMe,
-  logout,
-} = require("../controllers/authController");
+const { githubRedirect, githubCallback, getMe, logout } = require("../controllers/authController");
 
 const authenticateUser = require("../middleware/auth");
 

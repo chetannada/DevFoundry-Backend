@@ -35,7 +35,7 @@ if (isProduction) {
   app.set("trust proxy", 1);
 }
 
-// Handle routes for authentication and projects
+// Handle routes for authentication and builds
 const appRouter = require("./routes");
 const { connectToMongoDB } = require("./database/connection");
 const { baseRoot } = require("./controllers/authController");

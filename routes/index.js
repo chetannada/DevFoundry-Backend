@@ -1,12 +1,12 @@
 const express = require("express");
 const authRoutes = require("./authRoutes");
-const projectRoutes = require("./projectsRoutes");
+const buildRoutes = require("./buildsRoutes");
 const { baseRoot } = require("../controllers/authController");
 
 const router = express.Router();
 
 router.get("/", baseRoot);
 router.use("/auth", authRoutes);
-router.use("/projects", projectRoutes);
+router.use("/builds", buildRoutes);
 
 module.exports = router;

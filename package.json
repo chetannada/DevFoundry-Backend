@@ -1,7 +1,7 @@
 {
   "name": "devfoundry-backend",
   "version": "2.0.0",
-  "description": "Scalable Node.js + Express.js backend for DevFoundry — featuring GitHub OAuth, JWT authentication, role-based access, project submission workflows, and curated project APIs.",
+  "description": "Scalable Node.js + Express.js backend for DevFoundry — featuring GitHub OAuth, JWT authentication, role-based access, build submission workflows, and curated build APIs.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -23,7 +23,7 @@
     "jwt-auth",
     "rest-api",
     "full-stack",
-    "project-submission",
+    "build-submission",
     "developer-platform"
   ],
   "repository": {
