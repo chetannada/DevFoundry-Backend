@@ -93,7 +93,7 @@ exports.addBuild = async (req, res) => {
     const {
       title,
       description,
-      codeUrl,
+      repoUrl,
       liveUrl,
       contributorName,
       contributorAvatarUrl,
@@ -106,7 +106,7 @@ exports.addBuild = async (req, res) => {
     if (
       !title ||
       !description ||
-      !codeUrl ||
+      !repoUrl ||
       !liveUrl ||
       !contributorName ||
       !contributorAvatarUrl ||
@@ -124,7 +124,7 @@ exports.addBuild = async (req, res) => {
     const newBuild = new FinalModel({
       title,
       description,
-      codeUrl,
+      repoUrl,
       liveUrl,
       contributorName,
       contributorId,
@@ -194,7 +194,7 @@ exports.updateBuild = async (req, res) => {
   const {
     title,
     description,
-    codeUrl,
+    repoUrl,
     liveUrl,
     contributorName,
     contributorAvatarUrl,
@@ -230,7 +230,7 @@ exports.updateBuild = async (req, res) => {
 
     existingBuild.title = title ?? existingBuild.title;
     existingBuild.description = description ?? existingBuild.description;
-    existingBuild.codeUrl = codeUrl ?? existingBuild.codeUrl;
+    existingBuild.repoUrl = repoUrl ?? existingBuild.repoUrl;
     existingBuild.liveUrl = liveUrl ?? existingBuild.liveUrl;
     existingBuild.contributorName = contributorName ?? existingBuild.contributorName;
     existingBuild.contributorAvatarUrl = contributorAvatarUrl ?? existingBuild.contributorAvatarUrl;

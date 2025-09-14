@@ -4,7 +4,7 @@ const buildSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    codeUrl: { type: String, required: true },
+    repoUrl: { type: String, required: true },
     liveUrl: { type: String, required: true },
     contributorName: { type: String, required: true },
     contributorId: { type: Number, required: true },
@@ -63,7 +63,7 @@ const buildSchema = new mongoose.Schema(
     restoredReason: { type: String, default: null },
     submittedAt: { type: Date, default: null },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 const CoreBuilds = mongoose.model("CoreBuilds", buildSchema);
