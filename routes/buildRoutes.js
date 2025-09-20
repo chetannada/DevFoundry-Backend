@@ -7,7 +7,7 @@ const {
   updateBuild,
   reviewBuild,
   restoreBuild,
-} = require("../controllers/buildsController");
+} = require("../controllers/buildController");
 const authenticateUser = require("../middleware/auth");
 const optionallyAuthenticateUser = require("../middleware/optionallyAuth");
 

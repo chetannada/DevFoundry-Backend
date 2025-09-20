@@ -66,7 +66,7 @@ const buildSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-const CoreBuilds = mongoose.model("CoreBuilds", buildSchema);
-const CommunityBuilds = mongoose.model("CommunityBuilds", buildSchema);
+const CoreBuild = mongoose.model("CoreBuilds", buildSchema);
+const CommunityBuild = mongoose.model("CommunityBuilds", buildSchema);
 
-module.exports = { CoreBuilds, CommunityBuilds };
+module.exports = { CoreBuild, CommunityBuild };

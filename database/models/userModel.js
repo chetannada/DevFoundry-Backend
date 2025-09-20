@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const { USER_ROLES, PROVIDER } = require("../../utils/constants");
-const softDeletePlugin = require("./softDelete.plugin");
 
 const githubUserSchema = new mongoose.Schema({
   _id: false,
@@ -32,8 +31,6 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true, versionKey: false }
 );
-
-userSchema.plugin(softDeletePlugin);
 
 const UserModel = mongoose.model("User", userSchema, "User");
 
