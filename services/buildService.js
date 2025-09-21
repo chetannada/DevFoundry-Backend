@@ -1,4 +1,5 @@
 const { getModelByType } = require("../utils/buildType");
+const { fieldMap } = require("../utils/constants");
 
 exports.composeQuery = ({ userRole, contributorId, title, techStack, contributorName }) => {
   const isAdmin = userRole === "admin";
@@ -7,25 +8,31 @@ exports.composeQuery = ({ userRole, contributorId, title, techStack, contributor
   let query = {};
 
   if (isAdmin) {
-    query.status = { $in: ["approved", "pending", "rejected"] };
+    query[fieldMap.status] = { $in: ["approved", "pending", "rejected"] };
   } else if (isContributor) {
-    query.isDeleted = false;
+    query[fieldMap.isDeleted] = false;
     query.$or = [
-      { status: "approved" },
+      { [fieldMap.status]: "approved" },
       ...(contributorId
-        ? [{ status: { $in: ["pending", "rejected"] }, contributorId: Number(contributorId) }]
+        ? [
+            {
+              [fieldMap.status]: { $in: ["pending", "rejected"] },
+              [fieldMap.contributorId]: Number(contributorId),
+            },
+          ]
         : []),
     ];
   } else {
-    query.isDeleted = false;
-    query.status = "approved";
+    query[fieldMap.isDeleted] = false;
+    query[fieldMap.status] = "approved";
   }
 
   const andFilters = [];
-  if (title) andFilters.push({ title: { $regex: title, $options: "i" } });
-  if (techStack) andFilters.push({ techStack: { $regex: techStack, $options: "i" } });
+  if (title) andFilters.push({ [fieldMap.title]: { $regex: title, $options: "i" } });
+  if (techStack) andFilters.push({ [fieldMap.techStack]: { $regex: techStack, $options: "i" } });
   if (contributorName)
-    andFilters.push({ contributorName: { $regex: contributorName, $options: "i" } });
+    andFilters.push({ [fieldMap.contributorName]: { $regex: contributorName, $options: "i" } });
+
   if (andFilters.length) query.$and = andFilters;
 
   return query;
@@ -44,7 +51,7 @@ exports.addBuildStatus = async (type, data) => {
     liveUrl,
     contributorName,
     contributorAvatarUrl,
-    contributorGithubUrl,
+    contributorProfileUrl,
     contributorRole,
     contributorId,
     techStack,
@@ -57,29 +64,59 @@ exports.addBuildStatus = async (type, data) => {
     !liveUrl ||
     !contributorName ||
     !contributorAvatarUrl ||
-    !contributorGithubUrl ||
+    !contributorProfileUrl ||
     !contributorRole ||
     !contributorId
   ) {
     throw new Error("Missing required fields");
   }
 
-  const stack = Array.isArray(techStack) ? [...new Set(techStack.map(item => item.trim()))] : [];
+  const stack = Array.isArray(techStack)
+    ? [...new Set(techStack.map(item => item.trim().toLowerCase()))]
+    : [];
 
   const FinalModel = getModelByType(type);
 
   const newBuild = new FinalModel({
-    title,
-    description,
-    repoUrl,
-    liveUrl,
-    contributorName,
-    contributorId,
-    contributorAvatarUrl,
-    contributorGithubUrl,
-    contributorRole,
-    techStack: stack,
-    submittedAt: new Date(),
+    build: {
+      title,
+      description,
+      repoUrl,
+      liveUrl,
+      techStack: stack,
+      status: "pending",
+      submittedAt: new Date(),
+    },
+    contributor: {
+      id: contributorId,
+      name: contributorName,
+      avatarUrl: contributorAvatarUrl,
+      profileUrl: contributorProfileUrl,
+      role: contributorRole,
+    },
+    updated: {
+      by: null,
+      byRole: null,
+      at: null,
+    },
+    deleted: {
+      by: null,
+      byRole: null,
+      at: null,
+      isDeleted: false,
+    },
+    reviewed: {
+      by: null,
+      byRole: null,
+      at: null,
+      rejectionReason: null,
+    },
+    restored: {
+      by: null,
+      byRole: null,
+      at: null,
+      reason: null,
+    },
   });
 
   return await newBuild.save();
@@ -87,16 +124,17 @@ exports.addBuildStatus = async (type, data) => {
 
 exports.deleteBuildStatus = async (type, id, { contributorName, contributorId, userRole }) => {
   const FinalModel = getModelByType(type);
-  const build = await FinalModel.findById(id);
+  const existingBuild = await FinalModel.findById(id);
 
-  if (!build) {
+  if (!existingBuild) {
     const error = new Error("Build not found");
     error.status = 404;
     throw error;
   }
 
-  const isContributor = build.contributorId === Number(contributorId);
+  const isContributor = existingBuild.contributor?.id === Number(contributorId);
   const isAdmin = userRole === "admin";
+  const isApproved = existingBuild.build?.status === "approved";
 
   if (!isContributor && !isAdmin) {
     const error = new Error("Unauthorized to delete this build");
@@ -104,16 +142,18 @@ exports.deleteBuildStatus = async (type, id, { contributorName, contributorId, u
     throw error;
   }
 
-  if (isAdmin) {
+  if (isAdmin || !isApproved) {
     await FinalModel.findByIdAndDelete(id);
-    return { status: 200, message: "Build permanently deleted by admin" };
+    return { status: 200, message: "Build permanently deleted" };
   } else {
-    build.isDeleted = true;
-    build.deletedAt = new Date();
-    build.deletedBy = contributorName;
-    build.deletedByRole = userRole;
+    existingBuild.deleted = {
+      by: contributorName,
+      byRole: userRole,
+      at: new Date(),
+      isDeleted: true,
+    };
 
-    await build.save();
+    await existingBuild.save();
     return { status: 200, message: "Build deleted successfully" };
   }
 };
@@ -124,12 +164,12 @@ exports.updateBuildStatus = async (type, id, data) => {
     description,
     repoUrl,
     liveUrl,
+    techStack,
     contributorName,
     contributorAvatarUrl,
-    contributorGithubUrl,
+    contributorProfileUrl,
     contributorRole,
     contributorId,
-    techStack,
     updatedBy,
     updatedByRole,
     rejectionReason,
@@ -145,73 +185,88 @@ exports.updateBuildStatus = async (type, id, data) => {
     throw error;
   }
 
-  if (existingBuild.contributorId !== Number(contributorId)) {
+  if (existingBuild.contributor?.id !== Number(contributorId)) {
     const error = new Error("Unauthorized to update this build");
     error.status = 403;
     throw error;
   }
 
-  const stack = Array.isArray(techStack) ? [...new Set(techStack.map(item => item.trim()))] : [];
+  const stack = Array.isArray(techStack)
+    ? [...new Set(techStack.map(item => item.trim().toLowerCase()))]
+    : [];
 
-  existingBuild.title = title ?? existingBuild.title;
-  existingBuild.description = description ?? existingBuild.description;
-  existingBuild.repoUrl = repoUrl ?? existingBuild.repoUrl;
-  existingBuild.liveUrl = liveUrl ?? existingBuild.liveUrl;
-  existingBuild.contributorName = contributorName ?? existingBuild.contributorName;
-  existingBuild.contributorAvatarUrl = contributorAvatarUrl ?? existingBuild.contributorAvatarUrl;
-  existingBuild.contributorGithubUrl = contributorGithubUrl ?? existingBuild.contributorGithubUrl;
-  existingBuild.contributorRole = contributorRole ?? existingBuild.contributorRole;
-  existingBuild.techStack = stack.length ? stack : existingBuild.techStack;
-  existingBuild.updatedBy = updatedBy || "Unknown";
-  existingBuild.updatedByRole = updatedByRole || "contributor";
-  existingBuild.updatedAt = new Date();
-  existingBuild.rejectionReason = rejectionReason ?? existingBuild.rejectionReason;
-  existingBuild.restoredReason = restoredReason ?? existingBuild.restoredReason;
-  existingBuild.status = "pending";
+  // Update nested build info
+  existingBuild.build.title = title ?? existingBuild.build.title;
+  existingBuild.build.description = description ?? existingBuild.build.description;
+  existingBuild.build.repoUrl = repoUrl ?? existingBuild.build.repoUrl;
+  existingBuild.build.liveUrl = liveUrl ?? existingBuild.build.liveUrl;
+  existingBuild.build.techStack = stack.length ? stack : existingBuild.build.techStack;
+  existingBuild.build.status = "pending";
+
+  // Update contributor info
+  existingBuild.contributor.name = contributorName ?? existingBuild.contributor.name;
+  existingBuild.contributor.avatarUrl = contributorAvatarUrl ?? existingBuild.contributor.avatarUrl;
+  existingBuild.contributor.profileUrl =
+    contributorProfileUrl ?? existingBuild.contributor.profileUrl;
+  existingBuild.contributor.role = contributorRole ?? existingBuild.contributor.role;
+
+  // Update metadata
+  existingBuild.updated = {
+    by: updatedBy || "system",
+    byRole: updatedByRole || "contributor",
+    at: new Date(),
+  };
+
+  existingBuild.reviewed.rejectionReason =
+    rejectionReason ?? existingBuild.reviewed.rejectionReason;
+  existingBuild.restored.reason = restoredReason ?? existingBuild.restored.reason;
 
   return await existingBuild.save();
 };
 
 exports.reviewBuildStatus = async (type, id, { status, rejectionReason, userName, userRole }) => {
   const FinalModel = getModelByType(type);
-  const build = await FinalModel.findById(id);
+  const existingBuild = await FinalModel.findById(id);
 
-  if (!build) {
+  if (!existingBuild) {
     const error = new Error("Build not found");
     error.status = 404;
     throw error;
   }
 
-  build.status = status;
-  build.reviewedBy = userName;
-  build.reviewedByRole = userRole;
-  build.reviewedAt = new Date();
-  build.rejectionReason = status === "rejected" ? rejectionReason.trim() : null;
+  existingBuild.build.status = status;
 
-  return await build.save();
+  existingBuild.reviewed = {
+    by: userName,
+    byRole: userRole,
+    at: new Date(),
+    rejectionReason: rejectionReason ? rejectionReason?.trim() : null,
+  };
+
+  return await existingBuild.save();
 };
 
-exports.restoreBuildStatus = async (
-  type,
-  id,
-  { status, rejectionReason, restoredReason, userName, userRole }
-) => {
+exports.restoreBuildStatus = async (type, id, { status, restoredReason, userName, userRole }) => {
   const FinalModel = getModelByType(type);
-  const build = await FinalModel.findById(id);
+  const existingBuild = await FinalModel.findById(id);
 
-  if (!build) {
+  if (!existingBuild) {
     const error = new Error("Build not found");
     error.status = 404;
     throw error;
   }
 
-  build.status = status;
-  build.restoredBy = userName;
-  build.restoredByRole = userRole;
-  build.restoredAt = new Date();
-  build.restoredReason = restoredReason.trim();
-  build.rejectionReason = rejectionReason;
-  build.isDeleted = false;
+  existingBuild.build.status = status || "approved";
 
-  return await build.save();
+  existingBuild.restored = {
+    by: userName,
+    byRole: userRole,
+    at: new Date(),
+    reason: restoredReason ? restoredReason?.trim() : null,
+  };
+
+  existingBuild.reviewed.rejectionReason = null;
+  existingBuild.deleted.isDeleted = false;
+
+  return await existingBuild.save();
 };
