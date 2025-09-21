@@ -58,19 +58,23 @@ Built for modular clarity and production-grade deployment across environments.
 
 ├── api/                           # Entry point for API routing
 │ └── index.js
-├── controllers/                   # Business logic for auth and build routes
+├── controllers/                   # Handles HTTP requests and responses for auth and build routes
 │ ├── authController.js
-│ └── buildsController.js
+│ └── buildController.js
+├── services/                      # Core business logic and data operations for builds
+│ └── buildService.js
 ├── middleware/                    # Auth middleware for route protection
 │ └── auth.js
 ├── models/                        # Mongoose schemas for MongoDB
 │ ├── authUserModel.js
-│ └── buildsModel.js
+│ └── buildModel.js
 ├── routes/                        # Route definitions and grouping
 │ ├── authRoutes.js
 │ ├── index.js
-│ └── buildsRoutes.js
+│ └── buildRoutes.js
 ├── utils/                         # Shared utilities (JWT, error handling)
+│ ├── buildType.js
+│ ├── constants.js
 │ ├── error.js
 │ └── jwt.js
 ├── .env                           # Environment variables (fill actual values)
