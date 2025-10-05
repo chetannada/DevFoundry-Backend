@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-const generateToken = (user) => {
+const generateToken = user => {
   try {
     return jwt.sign(user, process.env.JWT_SECRET, {
       expiresIn: "1d",
@@ -13,4 +13,15 @@ const generateToken = (user) => {
   }
 };
 
-module.exports = { generateToken };
+const generateRefreshToken = user => {
+  try {
+    return jwt.sign(user, process.env.JWT_REFRESH_SECRET, {
+      expiresIn: "7d",
+    });
+  } catch (err) {
+    console.error("Failed to generate refresh token:", err);
+    throw new Error("Failed to generate refresh token.");
+  }
+};
+
+module.exports = { generateToken, generateRefreshToken };

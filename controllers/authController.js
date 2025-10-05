@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { generateToken } = require("../utils/jwt");
+const { generateToken, generateRefreshToken } = require("../utils/jwt");
 const { sendError } = require("../utils/error");
 const UserModel = require("../database/models/userModel");
 
@@ -75,12 +75,22 @@ exports.githubCallback = async (req, res) => {
     };
 
     const jwtToken = generateToken(userPayload);
+    const refreshToken = generateRefreshToken(userPayload);
 
     res.cookie("auth_token", jwtToken, {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      path: "/",
+    });
+
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      path: "/",
     });
 
     res.redirect(isProduction ? REACT_APP_URL : REACT_LOCAL_URL);
@@ -98,6 +108,12 @@ exports.getMe = (req, res) => {
 // Logout the user by clearing the authentication cookie
 exports.logout = (req, res) => {
   res.clearCookie("auth_token", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  });
+
+  res.clearCookie("refresh_token", {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
