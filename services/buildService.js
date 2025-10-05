@@ -110,6 +110,7 @@ exports.addBuildStatus = async (type, data) => {
       byRole: null,
       at: null,
       rejectionReason: null,
+      suggestion: null,
     },
     restored: {
       by: null,
@@ -172,8 +173,6 @@ exports.updateBuildStatus = async (type, id, data) => {
     contributorId,
     updatedBy,
     updatedByRole,
-    rejectionReason,
-    restoredReason,
   } = data;
 
   const FinalModel = getModelByType(type);
@@ -217,14 +216,18 @@ exports.updateBuildStatus = async (type, id, data) => {
     at: new Date(),
   };
 
-  existingBuild.reviewed.rejectionReason =
-    rejectionReason ?? existingBuild.reviewed.rejectionReason;
-  existingBuild.restored.reason = restoredReason ?? existingBuild.restored.reason;
+  existingBuild.reviewed.rejectionReason = null;
+  existingBuild.reviewed.suggestion = null;
+  existingBuild.restored.reason = null;
 
   return await existingBuild.save();
 };
 
-exports.reviewBuildStatus = async (type, id, { status, rejectionReason, userName, userRole }) => {
+exports.reviewBuildStatus = async (
+  type,
+  id,
+  { status, rejectionReason, suggestion, userName, userRole }
+) => {
   const FinalModel = getModelByType(type);
   const existingBuild = await FinalModel.findById(id);
 
@@ -234,14 +237,29 @@ exports.reviewBuildStatus = async (type, id, { status, rejectionReason, userName
     throw error;
   }
 
+  if (status === "rejected" && !rejectionReason?.trim()) {
+    const error = new Error("Rejection reason is required when status is 'rejected'.");
+    error.status = 400;
+    throw error;
+  }
+
+  if (status === "pending" && !suggestion?.trim()) {
+    const error = new Error("Suggestion message is required when status is 'pending'.");
+    error.status = 400;
+    throw error;
+  }
+
   existingBuild.build.status = status;
 
   existingBuild.reviewed = {
     by: userName,
     byRole: userRole,
     at: new Date(),
-    rejectionReason: rejectionReason ? rejectionReason?.trim() : null,
+    rejectionReason: status === "rejected" ? rejectionReason?.trim() : null,
+    suggestion: status === "pending" ? suggestion?.trim() : null,
   };
+
+  existingBuild.restored.reason = null;
 
   return await existingBuild.save();
 };
@@ -266,6 +284,7 @@ exports.restoreBuildStatus = async (type, id, { status, restoredReason, userName
   };
 
   existingBuild.reviewed.rejectionReason = null;
+  existingBuild.reviewed.suggestion = null;
   existingBuild.deleted.isDeleted = false;
 
   return await existingBuild.save();

@@ -85,6 +85,7 @@ const deletedSchema = new mongoose.Schema(
 const reviewedSchema = new mongoose.Schema(
   Object.assign({}, userActionSchema.obj, {
     rejectionReason: { type: String, default: null },
+    suggestion: { type: String, default: null },
   }),
   { _id: false }
 );
@@ -107,13 +108,6 @@ const buildSchema = new mongoose.Schema(
   },
   { timestamps: true, versionKey: false }
 );
-
-buildSchema.path("reviewed").validate({
-  validator: function () {
-    return this.build.status !== "rejected" || !!this.reviewed?.rejectionReason;
-  },
-  message: "Rejection reason is required when status is 'rejected'.",
-});
 
 const CoreBuild = mongoose.model("CoreBuilds", buildSchema);
 const CommunityBuild = mongoose.model("CommunityBuilds", buildSchema);
