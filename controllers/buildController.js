@@ -96,7 +96,7 @@ exports.updateBuild = async (req, res) => {
 
 exports.reviewBuild = async (req, res) => {
   const { id } = req.params;
-  const { status, rejectionReason } = req.body;
+  const { status, rejectionReason, suggestion } = req.body;
   const { type } = req.query;
   const { userName, userRole } = req.user;
 
@@ -104,7 +104,7 @@ exports.reviewBuild = async (req, res) => {
     return res.status(400).json({ errorMessage: "Invalid build type" });
   }
 
-  if (!["approved", "rejected"].includes(status)) {
+  if (!["pending", "approved", "rejected"].includes(status)) {
     return res.status(400).json({ errorMessage: "Invalid status value" });
   }
 
@@ -112,6 +112,12 @@ exports.reviewBuild = async (req, res) => {
     return res
       .status(400)
       .json({ errorMessage: "Rejection reason is required when status is rejected" });
+  }
+
+  if (status === "pending" && !suggestion?.trim()) {
+    return res
+      .status(400)
+      .json({ errorMessage: "Suggestion message is required when status is pending" });
   }
 
   if (!userName || !userRole) {
@@ -126,6 +132,7 @@ exports.reviewBuild = async (req, res) => {
     const reviewedBuild = await buildService.reviewBuildStatus(type, id, {
       status,
       rejectionReason,
+      suggestion,
       userName,
       userRole,
     });
@@ -144,7 +151,7 @@ exports.reviewBuild = async (req, res) => {
 
 exports.restoreBuild = async (req, res) => {
   const { id } = req.params;
-  const { status, rejectionReason, restoredReason } = req.body;
+  const { status, restoredReason } = req.body;
   const { type } = req.query;
   const { userName, userRole } = req.user;
 
@@ -171,7 +178,6 @@ exports.restoreBuild = async (req, res) => {
   try {
     const restoredBuild = await buildService.restoreBuildStatus(type, id, {
       status,
-      rejectionReason,
       restoredReason,
       userName,
       userRole,
