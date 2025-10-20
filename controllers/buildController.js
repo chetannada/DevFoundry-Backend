@@ -1,5 +1,6 @@
 const { getModelByType, validateType } = require("../utils/buildType");
 const buildService = require("../services/buildService");
+const UserModel = require("../database/models/userModel");
 
 exports.getAllBuilds = async (req, res) => {
   const { title, techStack, contributorName, contributorId, type } = req.query;
@@ -8,6 +9,8 @@ exports.getAllBuilds = async (req, res) => {
 
   try {
     const userRole = req?.user?.userRole;
+    const userId = req?.user?._id;
+
     const query = buildService.composeQuery({
       userRole,
       contributorId,
@@ -15,8 +18,21 @@ exports.getAllBuilds = async (req, res) => {
       techStack,
       contributorName,
     });
+
     const allBuilds = await buildService.fetchAllBuilds(type, query);
-    return res.status(200).json(allBuilds);
+
+    let favoriteIds = [];
+    if (userId) {
+      const user = await UserModel.findById(userId);
+      favoriteIds = user.favorites.filter(f => f.buildType === type).map(f => f.buildId.toString());
+    }
+
+    const buildsWithFavoriteFlag = allBuilds.map(build => ({
+      ...build.toObject(),
+      isFavorited: favoriteIds.includes(build._id.toString()),
+    }));
+
+    return res.status(200).json(buildsWithFavoriteFlag);
   } catch (err) {
     console.error("Error fetching builds:", err);
     return res.status(500).json({ errorMessage: "Failed to fetch builds" });
@@ -190,5 +206,23 @@ exports.restoreBuild = async (req, res) => {
   } catch (err) {
     console.error("Error restoring build:", err);
     res.status(err.status || 500).json({ errorMessage: err.message || "Failed to restore build" });
+  }
+};
+
+exports.favoriteBuild = async (req, res) => {
+  const { buildId } = req.params;
+  const { buildType } = req.body;
+  const user = req.user;
+
+  if (!buildType || !["core", "community"].includes(buildType)) {
+    return res.status(400).json({ errorMessage: "Invalid or missing buildType" });
+  }
+
+  try {
+    const result = await buildService.toggleFavoriteBuild({ user, buildId, buildType });
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Error toggling favorite:", err);
+    return res.status(500).json({ errorMessage: "Failed to toggle favorite" });
   }
 };

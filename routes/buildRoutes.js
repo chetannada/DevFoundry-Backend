@@ -7,6 +7,7 @@ const {
   updateBuild,
   reviewBuild,
   restoreBuild,
+  favoriteBuild,
 } = require("../controllers/buildController");
 const authenticateUser = require("../middleware/auth");
 const optionallyAuthenticateUser = require("../middleware/optionallyAuth");
@@ -22,5 +23,7 @@ router.put("/update/:id", updateBuild);
 router.put("/review/:id", authenticateUser, reviewBuild);
 
 router.put("/restore/:id", authenticateUser, restoreBuild);
+
+router.post("/favorites/:buildId", authenticateUser, favoriteBuild);
 
 module.exports = router;

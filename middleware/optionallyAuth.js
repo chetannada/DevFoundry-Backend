@@ -1,14 +1,20 @@
 const jwt = require("jsonwebtoken");
+const UserModel = require("../database/models/userModel");
 
-const optionallyAuthenticateUser = (req, res, next) => {
+const optionallyAuthenticateUser = async (req, res, next) => {
   const token = req.cookies.auth_token;
 
-  // No token, proceed without user
-  if (!token) return next();
+  if (!token) return next(); // No token, proceed as guest
 
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = user;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await UserModel.findById(decoded.userId);
+
+    if (user) {
+      req.user = user;
+    } else {
+      console.warn("User not found, proceeding as guest");
+    }
   } catch (err) {
     console.warn("Invalid token, proceeding as guest");
   }
