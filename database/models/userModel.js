@@ -28,6 +28,14 @@ const userSchema = new mongoose.Schema(
         return now.toLocaleString("en-US", { month: "long", year: "numeric" });
       },
     },
+    favorites: [
+      {
+        _id: false,
+        buildId: { type: mongoose.Schema.Types.ObjectId, required: true },
+        buildType: { type: String, enum: ["core", "community"], required: true },
+        favoritedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true, versionKey: false }
 );

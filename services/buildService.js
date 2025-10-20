@@ -289,3 +289,23 @@ exports.restoreBuildStatus = async (type, id, { status, restoredReason, userName
 
   return await existingBuild.save();
 };
+
+exports.toggleFavoriteBuild = async ({ user, buildId, buildType }) => {
+  const alreadyFavorited = user.favorites?.some(f => f.buildId.toString() === buildId);
+
+  if (alreadyFavorited) {
+    user.favorites = user.favorites.filter(f => f.buildId.toString() !== buildId);
+  } else {
+    user.favorites.push({ buildId, buildType });
+  }
+
+  await user.save();
+
+  return {
+    success: true,
+    message: alreadyFavorited ? "Build removed from favorites" : "Build added to favorites",
+    buildId,
+    buildType,
+    isFavorited: !alreadyFavorited,
+  };
+};
