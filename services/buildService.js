@@ -1,12 +1,20 @@
 const { getModelByType } = require("../utils/buildType");
 const { fieldMap } = require("../utils/constants");
 
-exports.composeQuery = ({ userRole, contributorId, title, techStack, contributorName }) => {
+exports.composeQuery = ({
+  userRole,
+  contributorId,
+  title,
+  techStack,
+  contributorName,
+  statusFilters = [],
+}) => {
   const isAdmin = userRole === "admin";
   const isContributor = userRole === "contributor";
 
-  let query = {};
+  const query = {};
 
+  // Role-based base query
   if (isAdmin) {
     query[fieldMap.status] = { $in: ["approved", "pending", "rejected"] };
   } else if (isContributor) {
@@ -27,6 +35,12 @@ exports.composeQuery = ({ userRole, contributorId, title, techStack, contributor
     query[fieldMap.status] = "approved";
   }
 
+  // Apply status filters if provided
+  if (statusFilters.length) {
+    query[fieldMap.status] = { $in: statusFilters };
+  }
+
+  // Apply search filters
   const andFilters = [];
   if (title) andFilters.push({ [fieldMap.title]: { $regex: title, $options: "i" } });
   if (techStack) andFilters.push({ [fieldMap.techStack]: { $regex: techStack, $options: "i" } });

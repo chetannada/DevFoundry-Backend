@@ -3,36 +3,64 @@ const buildService = require("../services/buildService");
 const UserModel = require("../database/models/userModel");
 
 exports.getAllBuilds = async (req, res) => {
-  const { title, techStack, contributorName, contributorId, type } = req.query;
+  const {
+    title,
+    techStack,
+    contributorName,
+    contributorId,
+    type,
+    favorite,
+    pending,
+    approved,
+    rejected,
+  } = req.query;
 
-  if (!validateType(type)) return res.status(400).json({ errorMessage: "Invalid build type" });
+  if (!validateType(type)) {
+    return res.status(400).json({ errorMessage: "Invalid build type" });
+  }
 
   try {
     const userRole = req?.user?.userRole;
     const userId = req?.user?._id;
 
+    // Collect status filters
+    const statusFilters = [];
+    if (pending === "true") statusFilters.push("pending");
+    if (approved === "true") statusFilters.push("approved");
+    if (rejected === "true") statusFilters.push("rejected");
+
+    // Compose query with status filters
     const query = buildService.composeQuery({
       userRole,
       contributorId,
       title,
       techStack,
       contributorName,
+      statusFilters,
     });
 
     const allBuilds = await buildService.fetchAllBuilds(type, query);
 
+    // Get user's favorite build IDs
     let favoriteIds = [];
     if (userId) {
       const user = await UserModel.findById(userId);
       favoriteIds = user.favorites.filter(f => f.buildType === type).map(f => f.buildId.toString());
     }
 
+    // Attach isFavorited flag
     const buildsWithFavoriteFlag = allBuilds.map(build => ({
       ...build.toObject(),
       isFavorited: favoriteIds.includes(build._id.toString()),
     }));
 
-    return res.status(200).json(buildsWithFavoriteFlag);
+    // Filter by favorite if requested
+    const finalBuilds =
+      favorite === "true"
+        ? buildsWithFavoriteFlag.filter(b => b.isFavorited)
+        : buildsWithFavoriteFlag;
+
+    return res.status(200).json(finalBuilds);
   } catch (err) {
     console.error("Error fetching builds:", err);
     return res.status(500).json({ errorMessage: "Failed to fetch builds" });
