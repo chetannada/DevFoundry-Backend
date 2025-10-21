@@ -3,7 +3,7 @@ const buildService = require("../services/buildService");
 const UserModel = require("../database/models/userModel");
 
 exports.getAllBuilds = async (req, res) => {
-  const { title, techStack, contributorName, contributorId, type } = req.query;
+  const { title, techStack, contributorName, contributorId, type, favorite } = req.query;
 
   if (!validateType(type)) return res.status(400).json({ errorMessage: "Invalid build type" });
 
@@ -32,7 +32,13 @@ exports.getAllBuilds = async (req, res) => {
       isFavorited: favoriteIds.includes(build._id.toString()),
     }));
 
-    return res.status(200).json(buildsWithFavoriteFlag);
+    // Filter by favorite
+    const filteredBuilds =
+      favorite === "true"
+        ? buildsWithFavoriteFlag.filter(b => b.isFavorited)
+        : buildsWithFavoriteFlag;
+
+    return res.status(200).json(filteredBuilds);
   } catch (err) {
     console.error("Error fetching builds:", err);
     return res.status(500).json({ errorMessage: "Failed to fetch builds" });
