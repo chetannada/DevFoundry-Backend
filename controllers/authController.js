@@ -42,6 +42,14 @@ exports.githubCallback = async (req, res) => {
 
     const accessToken = tokenRes.data.access_token;
 
+    res.cookie("github_token", accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 5, // 5 days
+      path: "/",
+    });
+
     const userRes = await axios.get("https://api.github.com/user", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -89,7 +97,7 @@ exports.githubCallback = async (req, res) => {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      maxAge: 1000 * 60 * 60 * 24 * 5, // 5 days
       path: "/",
     });
 
