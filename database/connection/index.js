@@ -6,7 +6,10 @@ module.exports.connectToMongoDB = () => {
   const currentEnv = process.env.NODE_ENV;
 
   mongoose
-    .connect(MONGODB_ATLAS_CONNECTION)
+    .connect(MONGODB_ATLAS_CONNECTION, {
+      family: 4,
+      serverSelectionTimeoutMS: 10000, // 10 seconds
+    })
     .then(() => console.log(`✅ Connected to ${currentEnv} database`))
-    .catch(error => console.log(error));
+    .catch(error => console.log(error, "database connection error"));
 };

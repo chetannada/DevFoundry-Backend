@@ -2,6 +2,7 @@ const express = require("express");
 const dotenvFlow = require("dotenv-flow");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const dns = require("node:dns");
 
 // dotenv-flow is used to manage environment variables across different environments
 dotenvFlow.config();
@@ -12,6 +13,11 @@ const REACT_APP_URL = process.env.REACT_APP_URL;
 const REACT_LOCAL_URL = process.env.REACT_LOCAL_URL;
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === "production";
+
+if (!isProduction) {
+  // Override DNS servers to use Google's public DNS for better reliability in development
+  dns.setServers(["8.8.8.8", "8.8.4.4"]);
+}
 
 // CORS is configured to allow requests from the frontend url
 // and to allow credentials (cookies) to be sent with requests
