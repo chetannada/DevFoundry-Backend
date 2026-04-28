@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { sendError } = require("../utils/error");
 const UserModel = require("../database/models/userModel");
+const isProduction = process.env.NODE_ENV === "production";
 
 const authenticateUser = async (req, res, next) => {
   const token = req.cookies.auth_token;
@@ -44,9 +45,16 @@ const authenticateUser = async (req, res, next) => {
       );
 
       res.cookie("auth_token", newAuthToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        httpOnly: true, // Secure token, hidden from JS
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
+        path: "/",
+      });
+
+      res.cookie("is_logged_in", "true", {
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
         maxAge: 1000 * 60 * 60 * 24, // 1 day
         path: "/",
       });
