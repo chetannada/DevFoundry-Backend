@@ -46,8 +46,16 @@ const appRouter = require("./routes");
 const { connectToMongoDB } = require("./database/connection");
 const { baseRoot } = require("./controllers/authController");
 
-// Connect to MongoDB
-connectToMongoDB();
+// Await connection before handling any request
+app.use(async (req, res, next) => {
+  try {
+    await connectToMongoDB();
+    next();
+  } catch (err) {
+    console.error("DB unavailable:", err.message);
+    return res.status(503).json({ errorMessage: "Database unavailable, try again" });
+  }
+});
 
 app.get("/", baseRoot);
 app.use("/api", appRouter);

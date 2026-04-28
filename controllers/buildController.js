@@ -45,7 +45,9 @@ exports.getAllBuilds = async (req, res) => {
     let favoriteIds = [];
     if (userId) {
       const user = await UserModel.findById(userId);
-      favoriteIds = user.favorites.filter(f => f.buildType === type).map(f => f.buildId.toString());
+      favoriteIds = (user?.favorites ?? [])
+        .filter(f => f.buildType === type)
+        .map(f => f.buildId.toString());
     }
 
     // Attach isFavorited flag
