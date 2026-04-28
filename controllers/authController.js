@@ -139,5 +139,5 @@ exports.logout = (req, res) => {
     sameSite: isProduction ? "none" : "lax",
   });
 
-  res.json({ message: "User Successfully Logged out" });
+  res.json({ displayMessage: "User Successfully Logged out" });
 };

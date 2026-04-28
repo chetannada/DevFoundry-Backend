@@ -159,7 +159,7 @@ exports.deleteBuildStatus = async (type, id, { contributorName, contributorId, u
 
   if (isAdmin || !isApproved) {
     await FinalModel.findByIdAndDelete(id);
-    return { status: 200, message: "Build permanently deleted" };
+    return { status: 200, displayMessage: "Build permanently deleted" };
   } else {
     existingBuild.deleted = {
       by: contributorName,
@@ -169,7 +169,7 @@ exports.deleteBuildStatus = async (type, id, { contributorName, contributorId, u
     };
 
     await existingBuild.save();
-    return { status: 200, message: "Build deleted successfully" };
+    return { status: 200, displayMessage: "Build deleted successfully" };
   }
 };
 
@@ -317,7 +317,7 @@ exports.toggleFavoriteBuild = async ({ user, buildId, buildType }) => {
 
   return {
     success: true,
-    message: alreadyFavorited ? "Build removed from favorites" : "Build added to favorites",
+    displayMessage: alreadyFavorited ? "Build removed from favorites" : "Build added to favorites",
     buildId,
     buildType,
     isFavorited: !alreadyFavorited,

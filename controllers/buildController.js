@@ -1,6 +1,7 @@
 const { getModelByType, validateType } = require("../utils/buildType");
 const buildService = require("../services/buildService");
 const UserModel = require("../database/models/userModel");
+const { sendError } = require("../utils/error");
 
 exports.getAllBuilds = async (req, res) => {
   const {
@@ -16,7 +17,7 @@ exports.getAllBuilds = async (req, res) => {
   } = req.query;
 
   if (!validateType(type)) {
-    return res.status(400).json({ errorMessage: "Invalid build type" });
+    return sendError(res, 400, "Invalid build type");
   }
 
   try {
@@ -65,7 +66,7 @@ exports.getAllBuilds = async (req, res) => {
     return res.status(200).json(finalBuilds);
   } catch (err) {
     console.error("Error fetching builds:", err);
-    return res.status(500).json({ errorMessage: "Failed to fetch builds" });
+    return sendError(res, 500, "Failed to fetch builds");
   }
 };
 
@@ -73,18 +74,18 @@ exports.addBuild = async (req, res) => {
   const { type } = req.query;
 
   if (!validateType(type)) {
-    return res.status(400).json({ errorMessage: "Invalid build type" });
+    return sendError(res, 400, "Invalid build type");
   }
 
   try {
     const addedBuild = await buildService.addBuildStatus(type, req.body);
     res.status(201).json({
-      message: "Build submitted successfully",
+      displayMessage: "Build submitted successfully",
       addedBuild,
     });
   } catch (err) {
     console.error("Error submitting build:", err);
-    res.status(500).json({ errorMessage: "Failed to submit build" });
+    return sendError(res, 500, "Failed to submit build");
   }
 };
 
@@ -94,7 +95,7 @@ exports.deleteBuild = async (req, res) => {
   const { type } = req.query;
 
   if (!validateType(type)) {
-    return res.status(400).json({ errorMessage: "Invalid build type" });
+    return sendError(res, 400, "Invalid build type");
   }
 
   try {
@@ -104,10 +105,10 @@ exports.deleteBuild = async (req, res) => {
       userRole,
     });
 
-    res.status(result.status).json({ message: result.message });
+    res.status(result.status).json({ displayMessage: result.displayMessage });
   } catch (err) {
     console.error("Error deleting build:", err);
-    res.status(err.status || 500).json({ errorMessage: err.message || "Failed to delete build" });
+    return sendError(res, err.status || 500, err.displayMessage || "Failed to delete build");
   }
 };
 
@@ -116,14 +117,14 @@ exports.updateBuild = async (req, res) => {
   const { type } = req.query;
 
   if (!validateType(type)) {
-    return res.status(400).json({ errorMessage: "Invalid build type" });
+    return sendError(res, 400, "Invalid build type");
   }
 
   try {
     const updatedBuild = await buildService.updateBuildStatus(type, id, req.body);
 
     res.status(200).json({
-      message: "Build updated successfully",
+      displayMessage: "Build updated successfully",
       buildAfterUpdate: updatedBuild,
     });
   } catch (err) {
@@ -131,12 +132,10 @@ exports.updateBuild = async (req, res) => {
 
     if (err.name === "ValidationError") {
       const messages = Object.values(err.errors).map(e => e.message);
-      return res.status(400).json({ errorMessage: messages.join(", ") });
+      return sendError(res, 400, messages.join(", "));
     }
 
-    res.status(err.status || 500).json({
-      errorMessage: err.message || "Failed to update build",
-    });
+    return sendError(res, err.status || 500, err.displayMessage || "Failed to update build");
   }
 };
 
@@ -147,31 +146,27 @@ exports.reviewBuild = async (req, res) => {
   const { userName, userRole } = req.user;
 
   if (!validateType(type)) {
-    return res.status(400).json({ errorMessage: "Invalid build type" });
+    return sendError(res, 400, "Invalid build type");
   }
 
   if (!["pending", "approved", "rejected"].includes(status)) {
-    return res.status(400).json({ errorMessage: "Invalid status value" });
+    return sendError(res, 400, "Invalid status value");
   }
 
   if (status === "rejected" && !rejectionReason?.trim()) {
-    return res
-      .status(400)
-      .json({ errorMessage: "Rejection reason is required when status is rejected" });
+    return sendError(res, 400, "Rejection reason is required when status is rejected");
   }
 
   if (status === "pending" && !suggestion?.trim()) {
-    return res
-      .status(400)
-      .json({ errorMessage: "Suggestion message is required when status is pending" });
+    return sendError(res, 400, "Suggestion message is required when status is pending");
   }
 
   if (!userName || !userRole) {
-    return res.status(401).json({ errorMessage: "Unauthorized: missing user context" });
+    return sendError(res, 401, "Unauthorized: missing user context");
   }
 
   if (userRole !== "admin") {
-    return res.status(403).json({ errorMessage: "Only admins can review builds" });
+    return sendError(res, 403, "Only admins can review builds");
   }
 
   try {
@@ -184,14 +179,12 @@ exports.reviewBuild = async (req, res) => {
     });
 
     res.status(200).json({
-      message: "Build reviewed successfully",
+      displayMessage: "Build reviewed successfully",
       buildAfterReview: reviewedBuild,
     });
   } catch (err) {
     console.error("Error reviewing build:", err);
-    res.status(err.status || 500).json({
-      errorMessage: err.message || "Failed to review build",
-    });
+    return sendError(res, err.status || 500, err.displayMessage || "Failed to review build");
   }
 };
 
@@ -202,23 +195,23 @@ exports.restoreBuild = async (req, res) => {
   const { userName, userRole } = req.user;
 
   if (!validateType(type)) {
-    return res.status(400).json({ errorMessage: "Invalid build type" });
+    return sendError(res, 400, "Invalid build type");
   }
 
   if (status !== "approved") {
-    return res.status(400).json({ errorMessage: "Only 'approved' status is allowed for restore" });
+    return sendError(res, 400, "Only 'approved' status is allowed for restore");
   }
 
   if (!restoredReason?.trim()) {
-    return res.status(400).json({ errorMessage: "Restored reason is required" });
+    return sendError(res, 400, "Restored reason is required");
   }
 
   if (!userName || !userRole) {
-    return res.status(401).json({ errorMessage: "Unauthorized: missing user context" });
+    return sendError(res, 401, "Unauthorized: missing user context");
   }
 
   if (userRole !== "admin") {
-    return res.status(403).json({ errorMessage: "Only admins can restore builds" });
+    return sendError(res, 403, "Only admins can restore builds");
   }
 
   try {
@@ -230,12 +223,12 @@ exports.restoreBuild = async (req, res) => {
     });
 
     res.status(200).json({
-      message: "Build restored successfully",
+      displayMessage: "Build restored successfully",
       buildAfterRestored: restoredBuild,
     });
   } catch (err) {
     console.error("Error restoring build:", err);
-    res.status(err.status || 500).json({ errorMessage: err.message || "Failed to restore build" });
+    return sendError(res, err.status || 500, err.displayMessage || "Failed to restore build");
   }
 };
 
@@ -245,7 +238,7 @@ exports.favoriteBuild = async (req, res) => {
   const user = req.user;
 
   if (!buildType || !["core", "community"].includes(buildType)) {
-    return res.status(400).json({ errorMessage: "Invalid or missing buildType" });
+    return sendError(res, 400, "Invalid or missing buildType");
   }
 
   try {
@@ -253,6 +246,6 @@ exports.favoriteBuild = async (req, res) => {
     return res.status(200).json(result);
   } catch (err) {
     console.error("Error toggling favorite:", err);
-    return res.status(500).json({ errorMessage: "Failed to toggle favorite" });
+    return sendError(res, 500, "Failed to toggle favorite");
   }
 };
