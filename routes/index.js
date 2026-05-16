@@ -2,6 +2,7 @@ const express = require("express");
 const authRoutes = require("./authRoutes");
 const buildRoutes = require("./buildRoutes");
 const githubRoutes = require("./githubRoutes");
+const weatherRoutes = require("./weatherRoutes");
 const aiRoutes = require("./aiRoutes");
 const { baseRoot } = require("../controllers/authController");
 
@@ -12,5 +13,6 @@ router.use("/auth", authRoutes);
 router.use("/builds", buildRoutes);
 router.use("/github", githubRoutes);
 router.use("/ai", aiRoutes);
+router.use("/weather", weatherRoutes);
 
 module.exports = router;

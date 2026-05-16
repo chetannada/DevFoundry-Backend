@@ -27,7 +27,7 @@ module.exports.connectToMongoDB = async () => {
         socketTimeoutMS: 45000,
       })
       .then(m => {
-        console.log(`✅ Connected to ${currentEnv} database`);
+        console.log(`Connected to ${currentEnv} database`);
         return m;
       })
       .catch(err => {
