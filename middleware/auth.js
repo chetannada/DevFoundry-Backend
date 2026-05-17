@@ -52,14 +52,6 @@ const authenticateUser = async (req, res, next) => {
         path: "/",
       });
 
-      res.cookie("is_logged_in", "true", {
-        httpOnly: false,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
-        path: "/",
-      });
-
       req.user = user;
       return next();
     } catch (refreshErr) {

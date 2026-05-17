@@ -93,14 +93,6 @@ exports.githubCallback = async (req, res) => {
       path: "/",
     });
 
-    res.cookie("is_logged_in", "true", {
-      httpOnly: false,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-      path: "/",
-    });
-
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: isProduction,
@@ -131,12 +123,6 @@ exports.logout = (req, res) => {
 
   res.clearCookie("refresh_token", {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-  });
-
-  res.clearCookie("is_logged_in", {
-    httpOnly: false,
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
   });
