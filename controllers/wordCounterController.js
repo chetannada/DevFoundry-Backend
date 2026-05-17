@@ -11,8 +11,8 @@ exports.getWordCounterDraft = async (req, res) => {
 
     return res.status(200).json(draft);
   } catch (error) {
-    console.error("Error fetching draft:", error);
-    return sendError(res, 500, "Failed to fetch word counter draft");
+    console.error("Error fetching content:", error);
+    return sendError(res, 500, "Failed to fetch content");
   }
 };
 
@@ -28,16 +28,17 @@ exports.updateWordCounterDraft = async (req, res) => {
       {},
       {
         content,
-      }
+      },
+      { upsert: true, new: true }
     );
 
     return res.status(200).json({
-      displayMessage: "Draft updated successfully",
+      displayMessage: "Content updated successfully",
       draftAfterUpdate: draft,
     });
   } catch (error) {
-    console.error("Error updating draft:", error);
-    return sendError(res, 500, "Failed to update draft");
+    console.error("Error updating content:", error);
+    return sendError(res, 500, "Failed to update content");
   }
 };
 
@@ -46,10 +47,10 @@ exports.deleteWordCounterDraft = async (req, res) => {
     await WordCounterModel.deleteOne({});
 
     return res.status(200).json({
-      displayMessage: "Draft deleted successfully",
+      displayMessage: "Content deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting draft:", error);
-    return sendError(res, 500, "Failed to delete draft");
+    console.error("Error deleting content:", error);
+    return sendError(res, 500, "Failed to delete content");
   }
 };
