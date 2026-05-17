@@ -94,8 +94,8 @@ exports.githubCallback = async (req, res) => {
     });
 
     res.cookie("is_logged_in", "true", {
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      secure: false,
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24, // 1 day
       path: "/",
     });
@@ -135,8 +135,8 @@ exports.logout = (req, res) => {
   });
 
   res.clearCookie("is_logged_in", {
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: false,
+    sameSite: "lax",
   });
 
   res.json({ displayMessage: "User Successfully Logged out" });

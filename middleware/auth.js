@@ -53,8 +53,8 @@ const authenticateUser = async (req, res, next) => {
       });
 
       res.cookie("is_logged_in", "true", {
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
+        secure: false,
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24, // 1 day
         path: "/",
       });
