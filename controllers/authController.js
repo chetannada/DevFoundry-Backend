@@ -94,6 +94,7 @@ exports.githubCallback = async (req, res) => {
     });
 
     res.cookie("is_logged_in", "true", {
+      httpOnly: false,
       secure: false,
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24, // 1 day
@@ -135,6 +136,7 @@ exports.logout = (req, res) => {
   });
 
   res.clearCookie("is_logged_in", {
+    httpOnly: false,
     secure: false,
     sameSite: "lax",
   });
