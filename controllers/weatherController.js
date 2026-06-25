@@ -4,8 +4,6 @@ const { sendError } = require("../utils/error");
 const OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
 const OPENWEATHER_KEY = process.env.OPENWEATHER_KEY;
 
-const COUNTRIES_URL = "https://restcountries.com/v3.1/all?fields=name,cca2";
-
 const GEO_NAMES_URL = process.env.GEO_NAMES_URL;
 const GEO_NAMES_USERNAME = process.env.GEO_NAMES_USERNAME;
 
@@ -36,7 +34,11 @@ exports.getWeather = async (req, res) => {
 
 exports.getCountries = async (req, res) => {
   try {
-    const response = await axios.get(COUNTRIES_URL);
+    const response = await axios.get(`${GEO_NAMES_URL}/countryInfoJSON`, {
+      params: {
+        username: GEO_NAMES_USERNAME,
+      },
+    });
 
     const countries = response.data;
 
@@ -54,10 +56,10 @@ exports.getCities = async (req, res) => {
   }
 
   try {
-    const response = await axios.get(GEO_NAMES_URL, {
+    const response = await axios.get(`${GEO_NAMES_URL}/searchJSON`, {
       params: {
         country: country,
-        featureClass: "P", // populated places
+        featureClass: "P",
         maxRows: 1000,
         username: GEO_NAMES_USERNAME,
       },
